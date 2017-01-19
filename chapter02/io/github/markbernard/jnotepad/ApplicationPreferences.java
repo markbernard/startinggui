@@ -34,9 +34,6 @@ public class ApplicationPreferences {
     private static final String WINDOW_WIDTH = "window.width";
     private static final String WINDOW_HEIGHT = "window.height";
     private static final String WINDOW_MAXIMIZED = "window.maximized";
-    private static final String DOCUMENT_LINE_WRAP = "document.line.wrap";
-    
-    private static boolean documentLineWrap;
     
     /**
      * Load state from the user preferences store and apply that state to 
@@ -54,7 +51,6 @@ public class ApplicationPreferences {
         if (prefs.getBoolean(WINDOW_MAXIMIZED, false)) {
             frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         }
-        documentLineWrap = prefs.getBoolean(DOCUMENT_LINE_WRAP, true);
     }
 
     /**
@@ -75,20 +71,5 @@ public class ApplicationPreferences {
             prefs.putInt(WINDOW_WIDTH, frame.getWidth());
             prefs.putInt(WINDOW_HEIGHT, frame.getHeight());
         }
-        prefs.putBoolean(DOCUMENT_LINE_WRAP, documentLineWrap);
-    }
-
-    /**
-     * @return the documentLineWrap
-     */
-    public static boolean isDocumentLineWrap() {
-        return documentLineWrap;
-    }
-
-    /**
-     * @param documentLineWrap the documentLineWrap to set
-     */
-    public static void setDocumentLineWrap(boolean documentLineWrap) {
-        ApplicationPreferences.documentLineWrap = documentLineWrap;
     }
 }
