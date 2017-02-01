@@ -1,0 +1,381 @@
+/**
+ * The MIT License (MIT)
+ * Copyright (c) 2016 Mark Bernard
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * this software and associated documentation files (the "Software"), to deal in the 
+ * Software without restriction, including without limitation the rights to use, copy, 
+ * modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+ * and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all copies or 
+ * substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE 
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+package io.github.markbernard.jnotepad;
+
+import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+
+import io.github.markbernard.jnotepad.action.FileAction;
+
+/**
+ * Main application class.
+ * 
+ * @author Mark Bernard
+ */
+public class JNotepad extends JPanel implements WindowListener, KeyListener {
+    private static final long serialVersionUID = -2119311360500754201L;
+    private static final String APPLICATION_TITLE = "JNotepad";
+    private static final String NEW_FILE_NAME = "Untitled";
+
+    private JFrame parentFrame;
+    private JTextArea textArea;
+    
+    private boolean dirty;
+    private String fileName;
+    private PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
+
+    /**
+     * Set up the application before showing the window.
+     * 
+     * @param parentFrame The main application window.
+     */
+    public JNotepad(JFrame parentFrame) {
+        this.parentFrame = parentFrame;
+        fileName = NEW_FILE_NAME;
+        ApplicationPreferences.loadPrefs(parentFrame);
+        dirty = false;
+        setTitle();
+        parentFrame.addWindowListener(this);
+        setLayout(new BorderLayout());
+        textArea = new JTextArea();
+        textArea.setLineWrap(true);
+        textArea.addKeyListener(this);
+        JScrollPane scroll = new JScrollPane(textArea);
+        add(scroll, BorderLayout.CENTER);
+        createMenus();
+    }
+    
+    private void createMenus() {
+        JMenuBar bar = new JMenuBar();
+        parentFrame.setJMenuBar(bar);
+        
+        JMenu fileMenu = new JMenu(new FileAction());
+        bar.add(fileMenu);
+        JMenuItem fileNewItem = new JMenuItem(new FileAction.NewAction(this));
+        fileMenu.add(fileNewItem);
+        JMenuItem fileOpenItem = new JMenuItem(new FileAction.OpenAction(this));
+        fileMenu.add(fileOpenItem);
+        JMenuItem fileSaveItem = new JMenuItem(new FileAction.SaveAction(this));
+        fileMenu.add(fileSaveItem);
+        JMenuItem fileSaveAsItem = new JMenuItem(new FileAction.SaveAsAction(this));
+        fileMenu.add(fileSaveAsItem);
+        fileMenu.addSeparator();
+        JMenuItem filePageSetupItem = new JMenuItem(new FileAction.PageSetupAction(this));
+        fileMenu.add(filePageSetupItem);
+        JMenuItem filePrintItem = new JMenuItem(new FileAction.PrintAction(this));
+        fileMenu.add(filePrintItem);
+        fileMenu.addSeparator();
+        JMenuItem fileExitItem = new JMenuItem(new FileAction.ExitAction(this));
+        fileMenu.add(fileExitItem);
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {}
+
+    @Override
+    public void windowClosed(WindowEvent e) {}
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        exit();
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {}
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {}
+
+    @Override
+    public void windowIconified(WindowEvent e) {}
+
+    @Override
+    public void windowOpened(WindowEvent e) {}
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (!dirty) {
+            dirty = true;
+            setTitle();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    /**
+     * Exits the application with cleanup.
+     */
+    public void exit() {
+        DirtyStatus status = isDirty();
+        
+        boolean saveCompleted = true;
+        if (status.equals(DirtyStatus.SAVE_FILE)) {
+            saveCompleted = save();
+        } else if (status.equals(DirtyStatus.CANCEL_ACTION)) {
+            saveCompleted = false;
+        }
+
+        if (saveCompleted) {
+            ApplicationPreferences.savePrefs(parentFrame);
+            System.exit(0);
+        }
+    }
+    
+    /**
+     * Create a new document while checking to see if the current document is saved.
+     */
+    public void newDocument() {
+        DirtyStatus status = isDirty();
+        
+        boolean saveCompleted = true;
+        if (status.equals(DirtyStatus.SAVE_FILE)) {
+            saveCompleted = save();
+        } else if (status.equals(DirtyStatus.CANCEL_ACTION)) {
+            saveCompleted = false;
+        }
+
+        if (saveCompleted) {
+            fileName = NEW_FILE_NAME;
+            textArea.setText("");
+            dirty = false;
+            setTitle();
+        }
+    }
+    
+    /**
+     * Show a file dialog and load the selected file.
+     */
+    public void load() {
+        DirtyStatus result = isDirty();
+        
+        boolean saveSuccessful = true;
+        if (result.equals(DirtyStatus.SAVE_FILE)) {
+            saveSuccessful = save();
+        } else if (result.equals(DirtyStatus.CANCEL_ACTION)) {
+            saveSuccessful = false;
+        }
+        
+        if (saveSuccessful) {
+            String filePath = ApplicationPreferences.getCurrentFilePath();
+            JFileChooser fileChooser = new JFileChooser(filePath);
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                fileName = selectedFile.getName();
+                ApplicationPreferences.setCurrentFilePath(
+                        selectedFile.getParentFile().getAbsolutePath().replace("\\", "/"));
+                loadFile(selectedFile);
+            }
+        }
+    }
+    
+    /**
+     * Save an existing document. If there is no existing document then call saveAs.
+     * If a call to saveAs is made and the user cancels during the file save dialog 
+     * then false will be returned.
+     * 
+     * @return true if the save was not interrupted, false otherwise
+     */
+    public boolean save() {
+        if (fileName.equals(NEW_FILE_NAME)) {
+            return saveAs();
+        } else {
+            saveFile(ApplicationPreferences.getCurrentFilePath() + "/" + fileName);
+            dirty = false;
+            setTitle();
+            
+            return true;
+        }
+    }
+    
+    private void saveFile(String path) {
+        Writer out = null;
+        
+        try {
+            out = new OutputStreamWriter(new FileOutputStream(path), "UTF-8");
+            out.write(textArea.getText());
+        } catch (UnsupportedEncodingException e) {
+            //UTF-8 is built into Java so this exception should never be thrown
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            ResourceCleanup.close(out);
+        }
+    }
+    
+    /**
+     * Display a dialog to the user asking for a location and name of the file
+     * to save. If the user cancels the dialog then return false.
+     * 
+     * @return false if the user cancels the file save dialog, true otherwise
+     */
+    public boolean saveAs() {
+        boolean result = true;
+        
+        String filePath = ApplicationPreferences.getCurrentFilePath();
+        JFileChooser fileChooser = new JFileChooser(filePath);
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            fileName = selectedFile.getName();
+            ApplicationPreferences.setCurrentFilePath(
+                    selectedFile.getParentFile().getAbsolutePath().replace("\\", "/"));
+            saveFile(selectedFile.getAbsolutePath());
+            dirty = false;
+            setTitle();
+        } else {
+            result = false;
+        }
+        
+        return result;
+    }
+
+    private DirtyStatus isDirty() {
+        DirtyStatus result = DirtyStatus.DONT_SAVE_FILE;
+        
+        if (dirty) {
+            int choice = JOptionPane.showConfirmDialog(this, "There are changes in the current document.\nClick 'Yes' to save changes.\nClick 'No' to discard changes.\nClick 'Cancel' to stop the current action.", "Save Changes?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (choice == JOptionPane.YES_OPTION) {
+                result = DirtyStatus.SAVE_FILE;
+            } else if (choice == JOptionPane.NO_OPTION) {
+                result = DirtyStatus.DONT_SAVE_FILE;
+            } else if (choice == JOptionPane.CANCEL_OPTION) {
+                result = DirtyStatus.CANCEL_ACTION;
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Load the file at the specified path while checking to see if the current document is saved.
+     * 
+     * @param path
+     */
+    public void loadFile(File path) {
+        InputStreamReader in = null;
+        
+        try {
+            in = new InputStreamReader(new FileInputStream(path), "UTF-8");
+            StringBuilder content = new StringBuilder();
+            char[] buffer = new char[32768];
+            int read = -1;
+            while ((read = in.read(buffer)) > -1) {
+                content.append(buffer, 0, read);
+            }
+            textArea.setText(content.toString());
+            dirty = false;
+            setTitle();
+        } catch (UnsupportedEncodingException e) {
+            //UTF-8 is built into Java so this exception should never be thrown
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Unable to find the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Unable to load the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            ResourceCleanup.close(in);
+        }
+    }
+
+    private void setTitle() {
+        parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
+    }
+
+
+    /**
+     * Perform the printing request.
+     */
+    public void doPrint() {
+        try {
+            textArea.print(null, null, true, PrinterJob.getPrinterJob().getPrintService(), printRequestAttributeSet, true);
+        } catch (PrinterException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * @return the printRequestAttributeSet
+     */
+    public PrintRequestAttributeSet getPrintRequestAttributeSet() {
+        return printRequestAttributeSet;
+    }
+
+    /**
+     * @param printRequestAttributeSet the printRequestAttributeSet to set
+     */
+    public void setPrintRequestAttributeSet(PrintRequestAttributeSet printRequestAttributeSet) {
+        this.printRequestAttributeSet = printRequestAttributeSet;
+    }
+
+    /**
+     * Main application starting point.
+     * 
+     * @param args
+     */
+    public static void main(String[] args) {
+        try {
+            // Make the application look native.
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            // System look and feel is always present.
+        }
+
+        JFrame frame = new JFrame();
+        frame.setLayout(new BorderLayout());
+        JNotepad jNotepad = new JNotepad(frame);
+        frame.add(jNotepad, BorderLayout.CENTER);
+        frame.setVisible(true);
+    }
+    
+    enum DirtyStatus {
+        SAVE_FILE, DONT_SAVE_FILE, CANCEL_ACTION;
+    }
+}
