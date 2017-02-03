@@ -35,6 +35,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.text.MessageFormat;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -66,7 +67,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     
     private boolean dirty;
     private String fileName;
-    private PrintRequestAttributeSet printRequestAttributeSet = new HashPrintRequestAttributeSet();
+    private PrintRequestAttributeSet printRequestAttributeSet;
 
     /**
      * Set up the application before showing the window.
@@ -329,32 +330,32 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
     }
 
+    /**
+     * Show the user the page setup dialog and store the users settings.
+     */
+    public void pageSetup() {
+        if (printRequestAttributeSet == null) {
+            printRequestAttributeSet = new HashPrintRequestAttributeSet();
+        }
+        PrinterJob.getPrinterJob().pageDialog(printRequestAttributeSet);
+    }
 
     /**
      * Perform the printing request.
      */
     public void doPrint() {
         try {
-            textArea.print(null, null, true, PrinterJob.getPrinterJob().getPrintService(), printRequestAttributeSet, true);
+            textArea.print(null, 
+                    new MessageFormat("page {0}"), 
+                    true, 
+                    PrinterJob.getPrinterJob().getPrintService(), 
+                    printRequestAttributeSet, 
+                    true);
         } catch (PrinterException e) {
             e.printStackTrace();
         }
     }
     
-    /**
-     * @return the printRequestAttributeSet
-     */
-    public PrintRequestAttributeSet getPrintRequestAttributeSet() {
-        return printRequestAttributeSet;
-    }
-
-    /**
-     * @param printRequestAttributeSet the printRequestAttributeSet to set
-     */
-    public void setPrintRequestAttributeSet(PrintRequestAttributeSet printRequestAttributeSet) {
-        this.printRequestAttributeSet = printRequestAttributeSet;
-    }
-
     /**
      * Main application starting point.
      * 
