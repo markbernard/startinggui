@@ -22,9 +22,7 @@ package io.github.markbernard.jnotepad.action;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.print.PrinterJob;
 
-import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -205,8 +203,7 @@ public class FileAction extends AbstractAction {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    PrintRequestAttributeSet printRequestAttributeSet = jNotepad.getPrintRequestAttributeSet();
-                    PrinterJob.getPrinterJob().pageDialog(printRequestAttributeSet);
+                    jNotepad.pageSetup();
                 }
             }, "Page Setup").start();
         }
