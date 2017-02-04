@@ -67,7 +67,8 @@ public class FileAction extends AbstractAction {
         public NewAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
+            putValue(Action.ACCELERATOR_KEY, 
+                     KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "New");
         }
         
