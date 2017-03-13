@@ -108,6 +108,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         setLayout(new BorderLayout());
         textArea = new JTextArea();
         textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
         textArea.getDocument().addDocumentListener(this);
         undoManager = new UndoManager();
         textArea.getDocument().addUndoableEditListener(undoManager);
