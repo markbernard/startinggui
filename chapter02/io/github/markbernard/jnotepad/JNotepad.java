@@ -51,6 +51,7 @@ public class JNotepad extends JPanel implements WindowListener {
         setLayout(new BorderLayout());
         textArea = new JTextArea();
         textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(textArea);
         add(scroll, BorderLayout.CENTER);
     }
