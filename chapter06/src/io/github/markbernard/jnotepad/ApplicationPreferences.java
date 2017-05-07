@@ -37,6 +37,7 @@ public class ApplicationPreferences {
     private static final String WINDOW_MAXIMIZED = "window.maximized";
     private static final String LAST_FILE_PATH = "last.file.path";
     private static final String WORD_WRAP = "word.wrap";
+    private static final String STATUS_BAR = "status.bar";
     private static final String FONT_FAMILY = "font.family";
     private static final String FONT_STYLE = "font.style";
     private static final String FONT_SIZE = "font.size";
@@ -44,6 +45,7 @@ public class ApplicationPreferences {
     private static String currentFileName = "Untitled";
     private static String currentFilePath;
     private static boolean wordWrap;
+    private static boolean statusBar;
     private static Font currentFont;
     
     /**
@@ -64,6 +66,7 @@ public class ApplicationPreferences {
         }
         currentFilePath = prefs.get(LAST_FILE_PATH, System.getProperty("user.home"));
         wordWrap = prefs.getBoolean(WORD_WRAP, false);
+        statusBar = prefs.getBoolean(STATUS_BAR, true);
         currentFont = new Font(prefs.get(FONT_FAMILY, "monospaced"), prefs.getInt(FONT_STYLE, Font.PLAIN), prefs.getInt(FONT_SIZE, 16));
     }
 
@@ -87,6 +90,7 @@ public class ApplicationPreferences {
         }
         prefs.put(LAST_FILE_PATH, currentFilePath);
         prefs.putBoolean(WORD_WRAP, wordWrap);
+        prefs.putBoolean(STATUS_BAR, statusBar);
         prefs.put(FONT_FAMILY, currentFont.getFamily());
         prefs.putInt(FONT_STYLE, currentFont.getStyle());
         prefs.putInt(FONT_SIZE, currentFont.getSize());
@@ -132,6 +136,20 @@ public class ApplicationPreferences {
      */
     public static void setWordWrap(boolean wordWrap) {
         ApplicationPreferences.wordWrap = wordWrap;
+    }
+
+    /**
+     * @return the statusBar
+     */
+    public static boolean isStatusBar() {
+        return statusBar;
+    }
+
+    /**
+     * @param statusBar the statusBar to set
+     */
+    public static void setStatusBar(boolean statusBar) {
+        ApplicationPreferences.statusBar = statusBar;
     }
 
     /**

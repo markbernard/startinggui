@@ -69,8 +69,6 @@ import javax.swing.undo.UndoManager;
 import io.github.markbernard.jnotepad.action.EditAction;
 import io.github.markbernard.jnotepad.action.FileAction;
 import io.github.markbernard.jnotepad.action.FormatAction;
-import io.github.markbernard.jnotepad.action.HelpAction;
-import io.github.markbernard.jnotepad.action.ViewAction;
 import io.github.markbernard.jnotepad.dialog.FontDialog;
 import io.github.markbernard.jnotepad.dialog.SearchDialog;
 import io.github.markbernard.jnotepad.dialog.GoToDialog;
@@ -183,19 +181,6 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         formatWordWrap.setSelected(ApplicationPreferences.isWordWrap());
         JMenuItem formatFont = new JMenuItem(new FormatAction.FontAction(this));
         formatMenu.add(formatFont);
-        
-        JMenu viewMenu = new JMenu(new ViewAction());
-        bar.add(viewMenu);
-        JCheckBoxMenuItem viewStatus = new JCheckBoxMenuItem(new ViewAction.StatusAction(this));
-        viewMenu.add(viewStatus);
-
-        JMenu helpMenu = new JMenu(new HelpAction());
-        bar.add(helpMenu);
-        JMenuItem helpViewHelp = new JMenuItem(new HelpAction.ViewHelpAction(this));
-        helpMenu.add(helpViewHelp);
-        helpMenu.addSeparator();
-        JMenuItem helpAbout = new JMenuItem(new HelpAction.AboutAction(this));
-        helpMenu.add(helpAbout);
     }
 
     @Override
@@ -728,27 +713,6 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         fontDialog.dispose();
     }
 
-    /**
-     * Toggle the status bar on or off
-     */
-    public void status() {
-        
-    }
-    
-    /**
-     * Show extensive help
-     */
-    public void help() {
-        
-    }
-    
-    /**
-     * Show simple about dialog.
-     */
-    public void about() {
-        
-    }
-    
     /**
      * Main application starting point.
      * 

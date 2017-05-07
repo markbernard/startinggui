@@ -20,6 +20,7 @@
 package io.github.markbernard.jnotepad;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -51,6 +52,7 @@ import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -60,6 +62,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -89,6 +93,8 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
 
     private JFrame parentFrame;
     private JTextArea textArea;
+    private JPanel statusBarPanel;
+    private JLabel positionLabel;
     private UndoManager undoManager;
     
     private boolean dirty;
@@ -119,10 +125,17 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         undoManager = new UndoManager();
         textArea.getDocument().addUndoableEditListener(undoManager);
         textArea.setFont(ApplicationPreferences.getCurrentFont());
+        textArea.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                updateStatusBar(e.getDot());
+            }
+        });
         removeKeyStrokes(textArea);
         JScrollPane scroll = new JScrollPane(textArea);
         add(scroll, BorderLayout.CENTER);
         createMenus();
+        createStatusBar();
     }
     
     private void createMenus() {
@@ -187,6 +200,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         JMenu viewMenu = new JMenu(new ViewAction());
         bar.add(viewMenu);
         JCheckBoxMenuItem viewStatus = new JCheckBoxMenuItem(new ViewAction.StatusAction(this));
+        viewStatus.setSelected(ApplicationPreferences.isStatusBar());
         viewMenu.add(viewStatus);
 
         JMenu helpMenu = new JMenu(new HelpAction());
@@ -196,6 +210,29 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         helpMenu.addSeparator();
         JMenuItem helpAbout = new JMenuItem(new HelpAction.AboutAction(this));
         helpMenu.add(helpAbout);
+    }
+    
+    private void createStatusBar() {
+        statusBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        positionLabel = new JLabel();
+        positionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        statusBarPanel.add(positionLabel);
+        if (ApplicationPreferences.isStatusBar()) {
+            add(statusBarPanel, BorderLayout.SOUTH);
+        }
+        updateStatusBar(textArea.getCaretPosition());
+    }
+    
+    private void updateStatusBar(int position) {
+        try {
+            int line = textArea.getLineOfOffset(position);
+            int column = position - textArea.getLineStartOffset(line);
+            positionLabel.setText(String.format("Ln %d, Col %d", (line + 1), (column + 1)));
+        } catch (Exception ex) {
+            //not critical if the position in the
+            //status bar does not get updated.
+            ex.printStackTrace();
+        }
     }
 
     @Override
@@ -223,22 +260,20 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
 
     @Override
     public void changedUpdate(DocumentEvent e) {
-        if (!dirty) {
-            dirty = true;
-            setTitle();
-        }
+        documentUpdated();
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        if (!dirty) {
-            dirty = true;
-            setTitle();
-        }
+        documentUpdated();
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
+        documentUpdated();
+    }
+    
+    private void documentUpdated() {
         if (!dirty) {
             dirty = true;
             setTitle();
@@ -283,6 +318,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
             dirty = false;
             setTitle();
         }
+        updateStatusBar(textArea.getCaretPosition());
     }
     
     /**
@@ -307,6 +343,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
                 ApplicationPreferences.setCurrentFilePath(
                         selectedFile.getParentFile().getAbsolutePath());
                 loadFile(selectedFile);
+                updateStatusBar(textArea.getCaretPosition());
             }
         }
     }
@@ -732,7 +769,14 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Toggle the status bar on or off
      */
     public void status() {
-        
+        ApplicationPreferences.setStatusBar(!ApplicationPreferences.isStatusBar());
+        if (ApplicationPreferences.isStatusBar()) {
+            add(statusBarPanel, BorderLayout.SOUTH);
+        } else {
+            remove(statusBarPanel);
+        }
+        validate();
+        repaint();
     }
     
     /**
