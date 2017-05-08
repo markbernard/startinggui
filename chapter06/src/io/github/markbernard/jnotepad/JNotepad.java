@@ -20,6 +20,7 @@
 package io.github.markbernard.jnotepad;
 
 import java.awt.BorderLayout;
+import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -41,6 +42,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URI;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -75,6 +77,7 @@ import io.github.markbernard.jnotepad.action.FileAction;
 import io.github.markbernard.jnotepad.action.FormatAction;
 import io.github.markbernard.jnotepad.action.HelpAction;
 import io.github.markbernard.jnotepad.action.ViewAction;
+import io.github.markbernard.jnotepad.dialog.AboutDialog;
 import io.github.markbernard.jnotepad.dialog.FontDialog;
 import io.github.markbernard.jnotepad.dialog.SearchDialog;
 import io.github.markbernard.jnotepad.dialog.GoToDialog;
@@ -783,14 +786,19 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Show extensive help
      */
     public void help() {
-        
+        try {
+            Desktop.getDesktop().browse(new URI("https://www.google.ca/"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     /**
      * Show simple about dialog.
      */
     public void about() {
-        
+        AboutDialog aboutDialog = new AboutDialog(parentFrame);
+        aboutDialog.setVisible(true);
     }
     
     /**

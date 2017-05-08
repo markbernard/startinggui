@@ -19,11 +19,14 @@
  */
 package io.github.markbernard.jnotepad.dialog;
 
+import io.github.markbernard.jnotepad.ResourceCleanup;
 import io.github.markbernard.jnotepad.action.DialogAction;
 
 import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -64,5 +67,29 @@ public abstract class BasicDialog extends JDialog {
         }
         setLocation(frameOwner.getX() + (frameOwner.getWidth() - width) / 2,
                 frameOwner.getY() + (frameOwner.getHeight() - height) / 2);
+    }
+    
+    protected String loadTextFromResource(String ref) {
+        String result = "";
+        
+        Reader in = null;
+        try {
+            in = new InputStreamReader(getClass().getResourceAsStream(ref), "UTF-8");
+            StringBuilder content = new StringBuilder();
+            char buffer[] = new char[16384];
+            int read = -1;
+            while ((read = in.read(buffer)) > -1) {
+                content.append(buffer, 0, read);
+            }
+            result = content.toString();
+        } catch (Exception e) {
+            //should not occur since we are dealing with a local resource
+            e.printStackTrace();
+        } finally {
+            ResourceCleanup.close(in);
+        }
+        
+        
+        return result;
     }
 }
