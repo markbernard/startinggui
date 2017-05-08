@@ -63,13 +63,15 @@ public class GoToDialog extends BasicDialog {
         
         JPanel labelPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         mainPanel.add(labelPanel, BorderLayout.NORTH);
-        labelPanel.add(new JLabel("Line number:"));
+        JLabel lineNumberLabel = new JLabel("Line number:");
+        labelPanel.add(lineNumberLabel);
         
         JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         mainPanel.add(inputPanel, BorderLayout.CENTER);
         lineNumberText = new JTextField("1", 28);
         addEscapeToActionMap(lineNumberText);
         inputPanel.add(lineNumberText);
+        lineNumberLabel.setLabelFor(lineNumberText);
         ((PlainDocument)lineNumberText.getDocument()).setDocumentFilter(new NumberDocumentFilter());
         lineNumberText.setSelectionStart(0);
         lineNumberText.setSelectionEnd(1);

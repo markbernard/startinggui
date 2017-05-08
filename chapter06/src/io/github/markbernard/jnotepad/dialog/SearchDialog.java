@@ -84,15 +84,21 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
         textInputPanel.add(findLabelPanel, BorderLayout.WEST);
         JPanel findInputPanel = new JPanel(new GridLayout(0, 1, 5, 5));
         textInputPanel.add(findInputPanel, BorderLayout.CENTER);
-        findLabelPanel.add(new JLabel("Find what:"), BorderLayout.WEST);
+        JLabel findLabel = new JLabel("Find what:");
+        findLabelPanel.add(findLabel, BorderLayout.WEST);
         findField = new JTextField(21);
         addEscapeToActionMap(findField);
         findInputPanel.add(findField, BorderLayout.CENTER);
+        findLabel.setLabelFor(findField);
+        findLabel.setDisplayedMnemonic(KeyEvent.VK_N);
         if (replace) {
-            findLabelPanel.add(new JLabel("Replace with:"), BorderLayout.WEST);
+            JLabel replaceLabel = new JLabel("Replace with:");
+            findLabelPanel.add(replaceLabel, BorderLayout.WEST);
             replaceField = new JTextField(21);
             addEscapeToActionMap(replaceField);
             findInputPanel.add(replaceField, BorderLayout.CENTER);
+            replaceLabel.setLabelFor(replaceField);
+            replaceLabel.setDisplayedMnemonic(KeyEvent.VK_P);
         }
 
         if (!replace) {
