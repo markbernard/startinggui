@@ -72,6 +72,7 @@ public class GoToDialog extends BasicDialog {
         addEscapeToActionMap(lineNumberText);
         inputPanel.add(lineNumberText);
         lineNumberLabel.setLabelFor(lineNumberText);
+        lineNumberLabel.setDisplayedMnemonic(KeyEvent.VK_L);
         ((PlainDocument)lineNumberText.getDocument()).setDocumentFilter(new NumberDocumentFilter());
         lineNumberText.setSelectionStart(0);
         lineNumberText.setSelectionEnd(1);
