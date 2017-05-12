@@ -231,10 +231,10 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
             int line = textArea.getLineOfOffset(position);
             int column = position - textArea.getLineStartOffset(line);
             positionLabel.setText(String.format("Ln %d, Col %d", (line + 1), (column + 1)));
-        } catch (Exception ex) {
+        } catch (Exception e) {
             //not critical if the position in the
             //status bar does not get updated.
-            ex.printStackTrace();
+            e.printStackTrace();
         }
     }
 
