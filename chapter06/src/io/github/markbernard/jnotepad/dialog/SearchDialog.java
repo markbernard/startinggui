@@ -119,11 +119,11 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
             buttonGroup.add(downRadio);
         }
         
-        JPanel checkboxPanel = new JPanel(new BorderLayout());
-        inputPanel.add(checkboxPanel, BorderLayout.WEST);
+        JPanel checkBoxPanel = new JPanel(new BorderLayout());
+        inputPanel.add(checkBoxPanel, BorderLayout.WEST);
         matchCase = new JCheckBox(new DialogAction.MatchCaseAction());
         addEscapeToActionMap(matchCase);
-        checkboxPanel.add(matchCase, BorderLayout.SOUTH);
+        checkBoxPanel.add(matchCase, BorderLayout.SOUTH);
 
         JPanel eastPanel = new JPanel(new BorderLayout());
         mainPanel.add(eastPanel, BorderLayout.EAST);

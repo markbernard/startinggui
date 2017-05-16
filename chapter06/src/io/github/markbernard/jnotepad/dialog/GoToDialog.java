@@ -109,6 +109,7 @@ public class GoToDialog extends BasicDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowDeactivated(WindowEvent e) {
+                performGoto = false;
                 dispose();
             }
         });
