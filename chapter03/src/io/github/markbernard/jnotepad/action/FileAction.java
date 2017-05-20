@@ -30,7 +30,7 @@ import javax.swing.KeyStroke;
 import io.github.markbernard.jnotepad.JNotepad;
 
 /**
- * Takes care of all actions for the File menu. Menu items will be internal classes of this class.
+ * Takes care of all actions for the File menu. Menu actions will be internal classes of this class.
  * 
  * @author Mark Bernard
  */
@@ -47,7 +47,6 @@ public class FileAction extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent arg0) {
-        System.out.println("File selected");
     }
 
     /**
@@ -68,8 +67,9 @@ public class FileAction extends AbstractAction {
             this.jNotepad = jNotepad;
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
             putValue(Action.ACCELERATOR_KEY, 
-                     KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
+                    KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "New");
+            putValue(Action.SHORT_DESCRIPTION, "Create a new blank document.");
         }
         
         @Override
@@ -102,6 +102,7 @@ public class FileAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "Open...");
+            putValue(Action.SHORT_DESCRIPTION, "Load a document from disk.");
         }
         
         @Override
@@ -134,6 +135,7 @@ public class FileAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "Save");
+            putValue(Action.SHORT_DESCRIPTION, "Save a document to disk.");
         }
         
         @Override
@@ -166,6 +168,7 @@ public class FileAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
             putValue(Action.DISPLAYED_MNEMONIC_INDEX_KEY, 5);
             putValue(Action.NAME, "Save As...");
+            putValue(Action.SHORT_DESCRIPTION, "Save the document with a new name.");
         }
         
         @Override
@@ -197,6 +200,7 @@ public class FileAction extends AbstractAction {
             this.jNotepad = jNotepad;
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_U);
             putValue(Action.NAME, "Page Setup...");
+            putValue(Action.SHORT_DESCRIPTION, "Edit printer page settings.");
         }
         
         @Override
@@ -229,6 +233,7 @@ public class FileAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "Print...");
+            putValue(Action.SHORT_DESCRIPTION, "Open the print dialog.");
         }
         
         @Override
@@ -260,6 +265,7 @@ public class FileAction extends AbstractAction {
             this.jNotepad = jNotepad;
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
             putValue(Action.NAME, "Exit");
+            putValue(Action.SHORT_DESCRIPTION, "Exit JNotepad.");
         }
         
         @Override
