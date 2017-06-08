@@ -71,8 +71,10 @@ public class FileAction extends AbstractAction {
                     KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "New");
             putValue(Action.SHORT_DESCRIPTION, "Create a new blank document.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/NewFileSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/NewFile.png").loadImage());
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/NewFileSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/NewFile.png").loadImage());
         }
         
         @Override
