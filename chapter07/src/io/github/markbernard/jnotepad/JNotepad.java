@@ -101,6 +101,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     private JLabel positionLabel;
     private UndoManager undoManager;
     private JCheckBoxMenuItem formatWordWrap;
+    private JToolBar toolbar;
     
     private boolean dirty;
     private String fileName;
@@ -194,6 +195,9 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         editMenu.add(editSelectAllItem);
         JMenuItem editTimeDateItem = new JMenuItem(new EditAction.TimeDateAction(this));
         editMenu.add(editTimeDateItem);
+        editMenu.addSeparator();
+        JMenuItem editSettingsItem = new JMenuItem(new EditAction.SettingsAction(this));
+        editMenu.add(editSettingsItem);
         
         JMenu formatMenu = new JMenu(new FormatAction());
         bar.add(formatMenu);
@@ -242,29 +246,29 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     }
 
     private void createToolbar() {
-        JToolBar bar = new JToolBar();
-        parentFrame.add(bar, BorderLayout.NORTH);
+        toolbar = new JToolBar();
+        parentFrame.add(toolbar, BorderLayout.NORTH);
         
-        bar.add(new FileAction.NewAction(this));
-        bar.add(new FileAction.OpenAction(this));
-        bar.add(new FileAction.SaveAction(this));
+        toolbar.add(new FileAction.NewAction(this));
+        toolbar.add(new FileAction.OpenAction(this));
+        toolbar.add(new FileAction.SaveAction(this));
 
-        bar.addSeparator();
-        bar.add(new FileAction.ExitAction(this));
+        toolbar.addSeparator();
+        toolbar.add(new FileAction.ExitAction(this));
         
-        bar.addSeparator();
-        bar.add(new EditAction.CutAction(this));
-        bar.add(new EditAction.CopyAction(this));
-        bar.add(new EditAction.PasteAction(this));
+        toolbar.addSeparator();
+        toolbar.add(new EditAction.CutAction(this));
+        toolbar.add(new EditAction.CopyAction(this));
+        toolbar.add(new EditAction.PasteAction(this));
 
-        bar.addSeparator();
-        bar.add(new EditAction.FindAction(this));
-        bar.add(new EditAction.ReplaceAction(this));
+        toolbar.addSeparator();
+        toolbar.add(new EditAction.FindAction(this));
+        toolbar.add(new EditAction.ReplaceAction(this));
 
-        bar.addSeparator();
-        bar.add(new FormatAction.WordWrapAction(this));
-        bar.addSeparator();
-        bar.add(new HelpAction.ViewHelpAction(this));
+        toolbar.addSeparator();
+        toolbar.add(new FormatAction.WordWrapAction(this));
+        toolbar.addSeparator();
+        toolbar.add(new HelpAction.ViewHelpAction(this));
     }
     @Override
     public void windowActivated(WindowEvent e) {}
@@ -732,6 +736,12 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         textArea.setCaretPosition(start + timeDateString.length());
     }
 
+    /**
+     * Show customizable settings dialog.
+     */
+    public void settings() {
+        
+    }
     /**
      * @param findTerm the findTerm to set
      */

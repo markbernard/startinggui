@@ -91,6 +91,10 @@ public class HelpAction extends AbstractAction {
             this.jNotepad = jNotepad;
             putValue(NAME, "About");
             putValue(MNEMONIC_KEY, KeyEvent.VK_A);
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/AboutSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/About.png").loadImage());
         }
 
         @Override

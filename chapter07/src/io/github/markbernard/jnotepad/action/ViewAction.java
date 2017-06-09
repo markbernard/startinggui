@@ -19,12 +19,14 @@
  */
 package io.github.markbernard.jnotepad.action;
 
+import io.github.markbernard.jnotepad.IconGenerator;
 import io.github.markbernard.jnotepad.JNotepad;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 /**
  * @author Mark Bernard
@@ -59,6 +61,10 @@ public class ViewAction extends AbstractAction {
             this.jNotepad = jNotepad;
             putValue(NAME, "Status Bar");
             putValue(MNEMONIC_KEY, KeyEvent.VK_S);
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/StatusBarSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/StatusBar.png").loadImage());
         }
 
         @Override

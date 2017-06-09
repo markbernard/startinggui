@@ -97,6 +97,10 @@ public class FormatAction extends AbstractAction {
             this.jNotepad = jNotepad;
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
             putValue(Action.NAME, "Font...");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/FontSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/Font.png").loadImage());
         }
 
         @Override

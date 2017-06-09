@@ -178,6 +178,10 @@ public class FileAction extends AbstractAction {
             putValue(Action.DISPLAYED_MNEMONIC_INDEX_KEY, 5);
             putValue(Action.NAME, "Save As...");
             putValue(Action.SHORT_DESCRIPTION, "Save the document with a new name.");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/SaveAsSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/SaveAs.png").loadImage());
         }
         
         @Override
@@ -210,6 +214,10 @@ public class FileAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_U);
             putValue(Action.NAME, "Page Setup...");
             putValue(Action.SHORT_DESCRIPTION, "Edit printer page settings.");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/PageSetupSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/PageSetup.png").loadImage());
         }
         
         @Override
@@ -243,6 +251,10 @@ public class FileAction extends AbstractAction {
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "Print...");
             putValue(Action.SHORT_DESCRIPTION, "Open the print dialog.");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/PrintSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/Print.png").loadImage());
         }
         
         @Override

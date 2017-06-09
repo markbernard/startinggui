@@ -71,6 +71,10 @@ public class EditAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_U);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "Undo");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/UndoSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/Undo.png").loadImage());
         }
 
         @Override
@@ -208,6 +212,10 @@ public class EditAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
             putValue(Action.NAME, "Delete");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/DeleteSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/Delete.png").loadImage());
         }
 
         @Override
@@ -282,6 +290,10 @@ public class EditAction extends AbstractAction {
             }
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
             putValue(Action.NAME, "Find Next");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/FindNextSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/FindNext.png").loadImage());
         }
 
         @Override
@@ -354,6 +366,10 @@ public class EditAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_G);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "Go To...");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/GoToSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/GoTo.png").loadImage());
         }
 
         @Override
@@ -386,6 +402,10 @@ public class EditAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK));
             putValue(Action.NAME, "Select All");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/SelectAllSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/SelectAll.png").loadImage());
         }
 
         @Override
@@ -418,6 +438,10 @@ public class EditAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
             putValue(Action.NAME, "Time/Date");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/TimeDateSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/TimeDate.png").loadImage());
         }
 
         @Override
@@ -428,6 +452,42 @@ public class EditAction extends AbstractAction {
                     jNotepad.timeDate();
                 }
             }, "Time/Date").start();
+        }
+    }
+
+    /**
+     * Actions for the Edit > Time Date menu item.
+     * 
+     * @author Mark Bernard
+     */
+    public static class SettingsAction extends AbstractAction {
+        private static final long serialVersionUID = 1215020210624036643L;
+        private JNotepad jNotepad;
+
+        /**
+         * Set up values appropriate to the Time Date menu item.
+         * 
+         * @param jNotepad 
+         */
+        public SettingsAction(JNotepad jNotepad) {
+            this.jNotepad = jNotepad;
+            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
+            putValue(Action.NAME, "Settings...");
+            putValue(Action.SMALL_ICON, 
+                    new IconGenerator("/res/icons/SettingsSmall.png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, 
+                    new IconGenerator("/res/icons/Settings.png").loadImage());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepad.settings();
+                }
+            }, "Settings").start();
         }
     }
 }
