@@ -24,6 +24,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
@@ -86,9 +87,14 @@ public class JNotepad implements WindowListener {
             // System look and feel is always present.
         }
 
-        JFrame frame = new JFrame("JNotepad");
-        new JNotepad(frame);
-        frame.setLayout(new BorderLayout());
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JFrame frame = new JFrame("JNotepad");
+                new JNotepad(frame);
+                frame.setLayout(new BorderLayout());
+                frame.setVisible(true);
+            }
+        };
     }
 }

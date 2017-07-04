@@ -27,6 +27,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 /**
@@ -97,10 +98,15 @@ public class JNotepad extends JPanel implements WindowListener {
             // System look and feel is always present.
         }
 
-        JFrame frame = new JFrame("JNotepad");
-        frame.setLayout(new BorderLayout());
-        JNotepad jNotepad = new JNotepad(frame);
-        frame.add(jNotepad, BorderLayout.CENTER);
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JFrame frame = new JFrame("JNotepad");
+                frame.setLayout(new BorderLayout());
+                JNotepad jNotepad = new JNotepad(frame);
+                frame.add(jNotepad, BorderLayout.CENTER);
+                frame.setVisible(true);
+            }
+        };
     }
 }

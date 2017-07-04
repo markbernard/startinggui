@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -726,12 +727,17 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
             // System look and feel is always present.
         }
 
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        JNotepad jNotepad = new JNotepad(frame);
-        frame.add(jNotepad, BorderLayout.CENTER);
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JFrame frame = new JFrame();
+                frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+                frame.setLayout(new BorderLayout());
+                JNotepad jNotepad = new JNotepad(frame);
+                frame.add(jNotepad, BorderLayout.CENTER);
+                frame.setVisible(true);
+            }
+        });
     }
     
     enum DirtyStatus {
