@@ -19,6 +19,8 @@
  */
 package io.github.markbernard.jnotepad;
 
+import io.github.markbernard.jnotepad.ApplicationPreferences;
+
 import java.awt.BorderLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -95,6 +97,6 @@ public class JNotepad implements WindowListener {
                 frame.setLayout(new BorderLayout());
                 frame.setVisible(true);
             }
-        };
+        });
     }
 }

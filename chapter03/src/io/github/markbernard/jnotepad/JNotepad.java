@@ -240,19 +240,24 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     }
     
     private void saveFile(String path) {
-        final JComponent parentComponent = this;
+        JComponent parentComponent = this;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Writer out = null;
                 
                 try {
-                    out = new OutputStreamWriter(new FileOutputStream(path), StandardCharsets.UTF_8);
+                    out = new OutputStreamWriter(new FileOutputStream(path), 
+                            StandardCharsets.UTF_8);
                     out.write(textArea.getText());
                 } catch (FileNotFoundException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(parentComponent, 
+                            "Unable to create the file: " + path + "\n" + e.getMessage(), 
+                            "Error loading file", JOptionPane.ERROR_MESSAGE);
                 } catch (IOException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(parentComponent, 
+                            "Unable to save the file: " + path, 
+                            "Error loading file", JOptionPane.ERROR_MESSAGE);
                 } finally {
                     ResourceCleanup.close(out);
                 }

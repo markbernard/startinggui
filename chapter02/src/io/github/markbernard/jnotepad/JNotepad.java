@@ -107,6 +107,6 @@ public class JNotepad extends JPanel implements WindowListener {
                 frame.add(jNotepad, BorderLayout.CENTER);
                 frame.setVisible(true);
             }
-        };
+        });
     }
 }
