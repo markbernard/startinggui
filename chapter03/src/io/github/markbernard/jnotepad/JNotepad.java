@@ -33,12 +33,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -239,20 +240,24 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     }
     
     private void saveFile(String path) {
-        Writer out = null;
-        
-        try {
-            out = new OutputStreamWriter(new FileOutputStream(path), "UTF-8");
-            out.write(textArea.getText());
-        } catch (UnsupportedEncodingException e) {
-            //UTF-8 is built into Java so this exception should never be thrown
-        } catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(this, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            ResourceCleanup.close(out);
-        }
+        final JComponent parentComponent = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Writer out = null;
+                
+                try {
+                    out = new OutputStreamWriter(new FileOutputStream(path), StandardCharsets.UTF_8);
+                    out.write(textArea.getText());
+                } catch (FileNotFoundException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    ResourceCleanup.close(out);
+                }
+            }
+        });
     }
     
     /**
@@ -307,7 +312,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         InputStreamReader in = null;
         
         try {
-            in = new InputStreamReader(new FileInputStream(path), "UTF-8");
+            in = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8);
             StringBuilder content = new StringBuilder();
             char[] buffer = new char[32768];
             int read = -1;
@@ -317,8 +322,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             textArea.setText(content.toString());
             dirty = false;
             setTitle();
-        } catch (UnsupportedEncodingException e) {
-            //UTF-8 is built into Java so this exception should never be thrown
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(this, "Unable to find the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
         } catch (IOException e) {
@@ -329,7 +332,12 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     }
 
     private void setTitle() {
-        parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
+            }
+        });
     }
 
     /**
@@ -347,6 +355,9 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      */
     public void doPrint() {
         try {
+            if (printRequestAttributeSet == null) {
+                printRequestAttributeSet = new HashPrintRequestAttributeSet();
+            }
             textArea.print(null, 
                     new MessageFormat("page {0}"), 
                     true, 
@@ -380,7 +391,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
                 frame.add(jNotepad, BorderLayout.CENTER);
                 frame.setVisible(true);
             }
-        };
+        });
     }
     
     enum DirtyStatus {

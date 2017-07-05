@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -49,6 +50,7 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -317,20 +319,24 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     }
     
     private void saveFile(String path) {
-        Writer out = null;
-        
-        try {
-            out = new OutputStreamWriter(new FileOutputStream(path), "UTF-8");
-            out.write(textArea.getText());
-        } catch (UnsupportedEncodingException e) {
-            //UTF-8 is built into Java so this exception should never be thrown
-        } catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(this, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            ResourceCleanup.close(out);
-        }
+        final JComponent parentComponent = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Writer out = null;
+                
+                try {
+                    out = new OutputStreamWriter(new FileOutputStream(path), StandardCharsets.UTF_8);
+                    out.write(textArea.getText());
+                } catch (FileNotFoundException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    ResourceCleanup.close(out);
+                }
+            }
+        });
     }
     
     /**
@@ -417,7 +423,12 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     }
 
     private void setTitle() {
-        parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
+            }
+        });
     }
 
     /**
@@ -435,6 +446,9 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      */
     public void doPrint() {
         try {
+            if (printRequestAttributeSet == null) {
+                printRequestAttributeSet = new HashPrintRequestAttributeSet();
+            }
             textArea.print(null, 
                     new MessageFormat("page {0}"), 
                     true, 
@@ -459,17 +473,27 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Cut the selected text and place it in the system clipboard
      */
     public void cut() {
-        int start = textArea.getSelectionStart();
-        textArea.cut();
-        textArea.setSelectionStart(start);
-        textArea.setSelectionEnd(start);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                int start = textArea.getSelectionStart();
+                textArea.cut();
+                textArea.setSelectionStart(start);
+                textArea.setSelectionEnd(start);
+            }
+        });
     }
     
     /**
      * Copy the selected text and place it in the system clipboard
      */
     public void copy() {
-        textArea.copy();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.copy();
+            }
+        });
     }
     
     /**
@@ -486,46 +510,56 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     }
     
     private void performPaste(DataFlavor flavor, Clipboard clipboard) {
-        try {
-            String data = (String)clipboard.getData(flavor);
-            int start = textArea.getSelectionStart();
-            int end = textArea.getSelectionEnd();
-            int length = end - start;
-            Document doc = textArea.getDocument();
-            try {
-                if (length > 0) {
-                    doc.remove(start, length);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String data = (String)clipboard.getData(flavor);
+                    int start = textArea.getSelectionStart();
+                    int end = textArea.getSelectionEnd();
+                    int length = end - start;
+                    Document doc = textArea.getDocument();
+                    try {
+                        if (length > 0) {
+                            doc.remove(start, length);
+                        }
+                        doc.insertString(start, data, null);
+                        int location = start + data.length();
+                        textArea.setSelectionStart(location);
+                        textArea.setSelectionEnd(location);
+                    } catch (BadLocationException e) {
+                        //looks like there is nothing to remove
+                        //if a mistake occurs we can still try standard paste
+                        textArea.paste();
+                    }
+                } catch (UnsupportedFlavorException e) {
+                    // generally this should not happen since we checked before hand if the flavor passed in was available.
+                    //if a mistake occurs we can still try standard paste
+                    textArea.paste();
+                } catch (IOException e) {
+                    //if a mistake occurs we can still try standard paste
+                    textArea.paste();
                 }
-                doc.insertString(start, data, null);
-                int location = start + data.length();
-                textArea.setSelectionStart(location);
-                textArea.setSelectionEnd(location);
-            } catch (BadLocationException e) {
-                //looks like there is nothing to remove
-                //if a mistake occurs we can still try standard paste
-                textArea.paste();
             }
-        } catch (UnsupportedFlavorException e) {
-            // generally this should not happen since we checked before hand if the flavor passed in was available.
-            //if a mistake occurs we can still try standard paste
-            textArea.paste();
-        } catch (IOException e) {
-            //if a mistake occurs we can still try standard paste
-            textArea.paste();
-        }
+        });
     }
 
     /**
      * Delete the selected text.
      */
     public void delete() {
-        int start = textArea.getSelectionStart();
-        int end = textArea.getSelectionEnd();
-        if (start != end) {
-            textArea.replaceRange("", start, end);
-            textArea.setSelectionEnd(start);
-            textArea.setSelectionStart(start);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                int start = textArea.getSelectionStart();
+                int end = textArea.getSelectionEnd();
+                if (start != end) {
+                    textArea.replaceRange("", start, end);
+                    textArea.setSelectionEnd(start);
+                    textArea.setSelectionStart(start);
+                }
+            }
+        });
     }
     
     /**
@@ -537,7 +571,8 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     }
     
     /**
-     * 
+     * Due to nesting issues this method does not use SwingUtilities.invokeLater.
+     * Calling methods should wrap any calls to this method in SwingUtilities.invokeLater to make sure it runs on the EDT
      */
     public void findNext() {
         if (findTerm != null && !findTerm.isEmpty()) {
@@ -585,32 +620,42 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * 
      */
     public void performReplace() {
-        if (findTerm != null && replaceTerm != null && !findTerm.isEmpty() && 
-                textArea.getSelectionStart() != textArea.getSelectionEnd()) {
-            String selectedText = textArea.getSelectedText();
-            if ((matchCase && findTerm.equals(selectedText)) || 
-                    (!matchCase && findTerm.equalsIgnoreCase(selectedText))) {
-                textArea.replaceSelection(replaceTerm);
-                textArea.setSelectionStart(textArea.getSelectionEnd());
-                findNext();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (findTerm != null && replaceTerm != null && !findTerm.isEmpty() && 
+                        textArea.getSelectionStart() != textArea.getSelectionEnd()) {
+                    String selectedText = textArea.getSelectedText();
+                    if ((matchCase && findTerm.equals(selectedText)) || 
+                            (!matchCase && findTerm.equalsIgnoreCase(selectedText))) {
+                        textArea.replaceSelection(replaceTerm);
+                        textArea.setSelectionStart(textArea.getSelectionEnd());
+                        findNext();
+                    }
+                }
             }
-        }
+        });
     }
     
     /**
      * 
      */
     public void replaceAll() {
-        if (findTerm != null && replaceTerm != null && !findTerm.isEmpty()) {
-            textArea.setCaretPosition(0);
-            findDownDirection = true;
-            findNext();
-            while (findTerm.equals(textArea.getSelectedText())) {
-                textArea.replaceSelection(replaceTerm);
-                textArea.setSelectionStart(textArea.getSelectionEnd());
-                findNext();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (findTerm != null && replaceTerm != null && !findTerm.isEmpty()) {
+                    textArea.setCaretPosition(0);
+                    findDownDirection = true;
+                    findNext();
+                    while (findTerm.equals(textArea.getSelectedText())) {
+                        textArea.replaceSelection(replaceTerm);
+                        textArea.setSelectionStart(textArea.getSelectionEnd());
+                        findNext();
+                    }
+                }
             }
-        }
+        });
     }
     
     /**
@@ -619,16 +664,21 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     public void goTo() {
         GoToDialog goToDialog = new GoToDialog(parentFrame, this);
         if (goToDialog.showDialog()) {
-            int lineNumber = goToDialog.getLineNumber() - 1;
-            
-            if (lineNumber >= 0 && lineNumber <= textArea.getLineCount()) {
-                try {
-                    textArea.setCaretPosition(textArea.getLineStartOffset(lineNumber));
-                } catch (BadLocationException e) {
-                    // should not occur since we already checked if the lineNumber is in range.
-                    e.printStackTrace();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    int lineNumber = goToDialog.getLineNumber() - 1;
+                    
+                    if (lineNumber >= 0 && lineNumber <= textArea.getLineCount()) {
+                        try {
+                            textArea.setCaretPosition(textArea.getLineStartOffset(lineNumber));
+                        } catch (BadLocationException e) {
+                            // should not occur since we already checked if the lineNumber is in range.
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -636,18 +686,28 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Selects all text in the JTextArea.
      */
     public void selectAll() {
-        textArea.setSelectionStart(0);        
-        textArea.setSelectionEnd(textArea.getText().length());        
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.setSelectionStart(0);        
+                textArea.setSelectionEnd(textArea.getText().length());
+            }
+        });
     }
     
     /**
      * Insert the time and date into the text a the current cursor location.
      */
     public void timeDate() {
-        String timeDateString = DATE_FORMAT.format(new Date());
-        int start = textArea.getSelectionStart();
-        textArea.replaceSelection(timeDateString);
-        textArea.setCaretPosition(start + timeDateString.length());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                String timeDateString = DATE_FORMAT.format(new Date());
+                int start = textArea.getSelectionStart();
+                textArea.replaceSelection(timeDateString);
+                textArea.setCaretPosition(start + timeDateString.length());
+            }
+        });
     }
 
     /**
@@ -697,8 +757,13 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Toggle word wrapping
      */
     public void wordWrap() {
-        ApplicationPreferences.setWordWrap(!ApplicationPreferences.isWordWrap());
-        textArea.setLineWrap(ApplicationPreferences.isWordWrap());
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ApplicationPreferences.setWordWrap(!ApplicationPreferences.isWordWrap());
+                textArea.setLineWrap(ApplicationPreferences.isWordWrap());
+            }
+        });
     }
 
     /**
@@ -709,7 +774,12 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         if (fontDialog.showFontDialog()) {
             Font selectedFont = fontDialog.getSelectedFont();
             ApplicationPreferences.setCurrentFont(selectedFont);
-            textArea.setFont(selectedFont);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    textArea.setFont(selectedFont);
+                }
+            });
         }
         fontDialog.dispose();
     }

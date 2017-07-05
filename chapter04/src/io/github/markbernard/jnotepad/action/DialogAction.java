@@ -28,6 +28,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JDialog;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 /**
  * Containing class for all actions for dialogs.
@@ -141,12 +142,12 @@ public class DialogAction {
         
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            new Thread(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     dialog.setVisible(false);
                 }
-            }, "Cancel").start();
+            });
         }
     }
 }

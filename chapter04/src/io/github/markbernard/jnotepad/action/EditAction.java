@@ -29,6 +29,7 @@ import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
 /**
  * Takes care of all actions for the Edit menu. Menu items will be internal classes of this class.
@@ -281,7 +282,12 @@ public class EditAction extends AbstractAction {
                         jNotepad.setFindDownDirection(searchDialog.isFindDirectionDown());
                         jNotepad.setMatchCase(searchDialog.isMatchCase());
                     }
-                    jNotepad.findNext();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            jNotepad.findNext();
+                        }
+                    });
                 }
             }, "Find Next (Menu)").start();
         }
