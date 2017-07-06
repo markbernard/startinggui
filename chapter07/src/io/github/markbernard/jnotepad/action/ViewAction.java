@@ -19,6 +19,7 @@
  */
 package io.github.markbernard.jnotepad.action;
 
+import io.github.markbernard.jnotepad.ApplicationPreferences;
 import io.github.markbernard.jnotepad.IconGenerator;
 import io.github.markbernard.jnotepad.JNotepad;
 
@@ -51,20 +52,34 @@ public class ViewAction extends AbstractAction {
      */
     public static class StatusAction extends AbstractAction {
         private static final long serialVersionUID = 5337443857787040687L;
+        private static StatusAction instance;
         
         private JNotepad jNotepad;
 
         /**
          * @param jNotepad
+         * @return Single instance
          */
-        public StatusAction(JNotepad jNotepad) {
+        public static StatusAction getInstance(JNotepad jNotepad) {
+            if (instance == null) {
+                instance = new StatusAction(jNotepad);
+            }
+            
+            return instance;
+        }
+        /**
+         * @param jNotepad
+         */
+        private StatusAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
             putValue(NAME, "Status Bar");
             putValue(MNEMONIC_KEY, KeyEvent.VK_S);
             putValue(Action.SMALL_ICON, 
-                    new IconGenerator("/res/icons/StatusBarSmall.png").loadImage());
+                    new IconGenerator("/res/icons/StatusBarSmall" +
+                    (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
             putValue(Action.LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/StatusBar.png").loadImage());
+                    new IconGenerator("/res/icons/StatusBar" +
+                    (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
         }
 
         @Override
@@ -72,6 +87,13 @@ public class ViewAction extends AbstractAction {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    ApplicationPreferences.setStatusBar(!ApplicationPreferences.isStatusBar());
+                    putValue(Action.SMALL_ICON, 
+                            new IconGenerator("/res/icons/StatusBarSmall" +
+                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
+                    putValue(Action.LARGE_ICON_KEY, 
+                            new IconGenerator("/res/icons/StatusBar" +
+                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
                     jNotepad.status();
                 }
             }, "Status Bar").start();

@@ -134,6 +134,7 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
         addEscapeToActionMap(findNextButton);
         buttonPanel.add(findNextButton);
         findNextButton.setEnabled(false);
+        findNextButton.setIcon(null);
         JRootPane rootPane = getRootPane();
         rootPane.setDefaultButton(findNextButton);
         if (replace) {

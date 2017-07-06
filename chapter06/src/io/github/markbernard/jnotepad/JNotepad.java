@@ -892,8 +892,13 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Show simple about dialog.
      */
     public void about() {
-        AboutDialog aboutDialog = new AboutDialog(parentFrame);
-        aboutDialog.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                AboutDialog aboutDialog = new AboutDialog(parentFrame);
+                aboutDialog.setVisible(true);
+            }
+        });
     }
     
     /**

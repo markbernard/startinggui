@@ -28,7 +28,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -44,8 +43,8 @@ public class EditAction extends AbstractAction {
      * Set up values appropriate to the Undo menu item.
      */
     public EditAction() {
-        putValue(Action.MNEMONIC_KEY, KeyEvent.VK_E);
-        putValue(Action.NAME, "Edit");
+        putValue(MNEMONIC_KEY, KeyEvent.VK_E);
+        putValue(NAME, "Edit");
     }
 
     @Override
@@ -69,12 +68,12 @@ public class EditAction extends AbstractAction {
          */
         public UndoAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_U);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Undo");
-            putValue(Action.SMALL_ICON, 
+            putValue(MNEMONIC_KEY, KeyEvent.VK_U);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Undo");
+            putValue(SMALL_ICON, 
                     new IconGenerator("/res/icons/UndoSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, 
+            putValue(LARGE_ICON_KEY, 
                     new IconGenerator("/res/icons/Undo.png").loadImage());
         }
 
@@ -105,12 +104,12 @@ public class EditAction extends AbstractAction {
          */
         public CutAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Cut");
-            putValue(Action.SHORT_DESCRIPTION, "Remove the current selection from the document and put it in the clipboard.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/CutSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/Cut.png").loadImage());
+            putValue(MNEMONIC_KEY, KeyEvent.VK_T);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Cut");
+            putValue(SHORT_DESCRIPTION, "Remove the current selection from the document and put it in the clipboard.");
+            putValue(SMALL_ICON, new IconGenerator("/res/icons/CutSmall.png").loadImage());
+            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Cut.png").loadImage());
         }
 
         @Override
@@ -140,12 +139,12 @@ public class EditAction extends AbstractAction {
          */
         public CopyAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Copy");
-            putValue(Action.SHORT_DESCRIPTION, "Copy the current selection from the document and put it in the clipboard.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/CopySmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/Copy.png").loadImage());
+            putValue(MNEMONIC_KEY, KeyEvent.VK_C);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Copy");
+            putValue(SHORT_DESCRIPTION, "Copy the current selection from the document and put it in the clipboard.");
+            putValue(SMALL_ICON, new IconGenerator("/res/icons/CopySmall.png").loadImage());
+            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Copy.png").loadImage());
         }
 
         @Override
@@ -175,12 +174,12 @@ public class EditAction extends AbstractAction {
          */
         public PasteAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Paste");
-            putValue(Action.SHORT_DESCRIPTION, "Paste the clipboard contents into the current cursor location or selection.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/PasteSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/Paste.png").loadImage());
+            putValue(MNEMONIC_KEY, KeyEvent.VK_P);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Paste");
+            putValue(SHORT_DESCRIPTION, "Paste the clipboard contents into the current cursor location or selection.");
+            putValue(SMALL_ICON, new IconGenerator("/res/icons/PasteSmall.png").loadImage());
+            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Paste.png").loadImage());
         }
 
         @Override
@@ -210,12 +209,12 @@ public class EditAction extends AbstractAction {
          */
         public DeleteAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-            putValue(Action.NAME, "Delete");
-            putValue(Action.SMALL_ICON, 
+            putValue(MNEMONIC_KEY, KeyEvent.VK_L);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+            putValue(NAME, "Delete");
+            putValue(SMALL_ICON, 
                     new IconGenerator("/res/icons/DeleteSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, 
+            putValue(LARGE_ICON_KEY, 
                     new IconGenerator("/res/icons/Delete.png").loadImage());
         }
 
@@ -246,12 +245,12 @@ public class EditAction extends AbstractAction {
          */
         public FindAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Find...");
-            putValue(Action.SHORT_DESCRIPTION, "Open the find dialog.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/FindSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/Find.png").loadImage());
+            putValue(MNEMONIC_KEY, KeyEvent.VK_F);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Find...");
+            putValue(SHORT_DESCRIPTION, "Open the find dialog.");
+            putValue(SMALL_ICON, new IconGenerator("/res/icons/FindSmall.png").loadImage());
+            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Find.png").loadImage());
         }
 
         @Override
@@ -285,15 +284,15 @@ public class EditAction extends AbstractAction {
             this.jNotepad = jNotepad;
             this.searchDialog = searchDialog;
             if (searchDialog == null) {
-                putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
+                putValue(MNEMONIC_KEY, KeyEvent.VK_N);
             } else {
                 putValue(MNEMONIC_KEY, KeyEvent.VK_F);
             }
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
-            putValue(Action.NAME, "Find Next");
-            putValue(Action.SMALL_ICON, 
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
+            putValue(NAME, "Find Next");
+            putValue(SMALL_ICON, 
                     new IconGenerator("/res/icons/FindNextSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, 
+            putValue(LARGE_ICON_KEY, 
                     new IconGenerator("/res/icons/FindNext.png").loadImage());
         }
 
@@ -334,12 +333,12 @@ public class EditAction extends AbstractAction {
          */
         public ReplaceAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Replace...");
-            putValue(Action.SHORT_DESCRIPTION, "Open the replace dialog.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/TextReplaceSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/TextReplace.png").loadImage());
+            putValue(MNEMONIC_KEY, KeyEvent.VK_R);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Replace...");
+            putValue(SHORT_DESCRIPTION, "Open the replace dialog.");
+            putValue(SMALL_ICON, new IconGenerator("/res/icons/TextReplaceSmall.png").loadImage());
+            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/TextReplace.png").loadImage());
         }
 
         @Override
@@ -369,12 +368,12 @@ public class EditAction extends AbstractAction {
          */
         public GoToAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_G);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Go To...");
-            putValue(Action.SMALL_ICON, 
+            putValue(MNEMONIC_KEY, KeyEvent.VK_G);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Go To...");
+            putValue(SMALL_ICON, 
                     new IconGenerator("/res/icons/GoToSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, 
+            putValue(LARGE_ICON_KEY, 
                     new IconGenerator("/res/icons/GoTo.png").loadImage());
         }
 
@@ -405,12 +404,12 @@ public class EditAction extends AbstractAction {
          */
         public SelectAllAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Select All");
-            putValue(Action.SMALL_ICON, 
+            putValue(MNEMONIC_KEY, KeyEvent.VK_A);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Select All");
+            putValue(SMALL_ICON, 
                     new IconGenerator("/res/icons/SelectAllSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, 
+            putValue(LARGE_ICON_KEY, 
                     new IconGenerator("/res/icons/SelectAll.png").loadImage());
         }
 
@@ -441,12 +440,12 @@ public class EditAction extends AbstractAction {
          */
         public TimeDateAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-            putValue(Action.NAME, "Time/Date");
-            putValue(Action.SMALL_ICON, 
+            putValue(MNEMONIC_KEY, KeyEvent.VK_D);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            putValue(NAME, "Time/Date");
+            putValue(SMALL_ICON, 
                     new IconGenerator("/res/icons/TimeDateSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, 
+            putValue(LARGE_ICON_KEY, 
                     new IconGenerator("/res/icons/TimeDate.png").loadImage());
         }
 
@@ -477,12 +476,12 @@ public class EditAction extends AbstractAction {
          */
         public SettingsAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_S);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
-            putValue(Action.NAME, "Settings...");
-            putValue(Action.SMALL_ICON, 
+            putValue(MNEMONIC_KEY, KeyEvent.VK_S);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
+            putValue(NAME, "Settings...");
+            putValue(SMALL_ICON, 
                     new IconGenerator("/res/icons/SettingsSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, 
+            putValue(LARGE_ICON_KEY, 
                     new IconGenerator("/res/icons/Settings.png").loadImage());
         }
 

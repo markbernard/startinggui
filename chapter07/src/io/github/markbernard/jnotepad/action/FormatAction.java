@@ -19,6 +19,7 @@
  */
 package io.github.markbernard.jnotepad.action;
 
+import io.github.markbernard.jnotepad.ApplicationPreferences;
 import io.github.markbernard.jnotepad.IconGenerator;
 import io.github.markbernard.jnotepad.JNotepad;
 
@@ -53,20 +54,36 @@ public class FormatAction extends AbstractAction {
      */
     public static class WordWrapAction extends AbstractAction {
         private static final long serialVersionUID = -7155740870533895459L;
+        private static WordWrapAction instance;
+        
         private JNotepad jNotepad;
 
+        /**
+         * @param jNotepad
+         * @return Single instance
+         */
+        public static WordWrapAction getInstance(JNotepad jNotepad) {
+            if (instance == null) {
+                instance = new WordWrapAction(jNotepad);
+            }
+            
+            return instance;
+        }
+        
         /**
          * Set up values for the Word Wrap menu
          * 
          * @param jNotepad 
          */
-        public WordWrapAction(JNotepad jNotepad) {
+        private WordWrapAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_W);
             putValue(Action.NAME, "Word Wrap");
             putValue(Action.SHORT_DESCRIPTION, "Toggle soft word wrap on or off.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/WordWrapSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/WordWrap.png").loadImage());
+            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/WordWrapSmall" +
+                    (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
+            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/WordWrap" +
+                    (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
         }
 
         @Override
@@ -74,6 +91,11 @@ public class FormatAction extends AbstractAction {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    ApplicationPreferences.setWordWrap(!ApplicationPreferences.isWordWrap());
+                    putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/WordWrapSmall" +
+                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
+                    putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/WordWrap" +
+                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
                     jNotepad.wordWrap();
                 }
             }, "Word Wrap").start();

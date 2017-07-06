@@ -20,6 +20,8 @@
 package io.github.markbernard.jnotepad;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -29,6 +31,7 @@ import javax.swing.ImageIcon;
  * @author Mark Bernard
  */
 public class IconGenerator {
+    private static final Map<String, Icon> iconCache = new HashMap<String, Icon>();
     private String path;
 
     /**
@@ -42,12 +45,17 @@ public class IconGenerator {
      * @return The image pointed to by the provided path
      */
     public Icon loadImage() {
-        try {
-            return new ImageIcon(ImageIO.read(getClass().getResourceAsStream(path)));
-        } catch (IOException e) {
-            e.printStackTrace();
+        Icon icon = iconCache.get(path);
+        
+        if (icon == null) {
+            try {
+                icon = new ImageIcon(ImageIO.read(getClass().getResourceAsStream(path)));
+                iconCache.put(path, icon);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         
-        return null;
+        return icon;
     }
 }
