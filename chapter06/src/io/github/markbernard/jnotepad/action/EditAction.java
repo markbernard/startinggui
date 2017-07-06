@@ -27,7 +27,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -43,8 +42,8 @@ public class EditAction extends AbstractAction {
      * Set up values appropriate to the Undo menu item.
      */
     public EditAction() {
-        putValue(Action.MNEMONIC_KEY, KeyEvent.VK_E);
-        putValue(Action.NAME, "Edit");
+        putValue(MNEMONIC_KEY, KeyEvent.VK_E);
+        putValue(NAME, "Edit");
     }
 
     @Override
@@ -68,9 +67,9 @@ public class EditAction extends AbstractAction {
          */
         public UndoAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_U);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Undo");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_U);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Undo");
         }
 
         @Override
@@ -100,9 +99,9 @@ public class EditAction extends AbstractAction {
          */
         public CutAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_T);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Cut");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_T);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Cut");
         }
 
         @Override
@@ -132,9 +131,9 @@ public class EditAction extends AbstractAction {
          */
         public CopyAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Copy");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_C);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Copy");
         }
 
         @Override
@@ -164,9 +163,9 @@ public class EditAction extends AbstractAction {
          */
         public PasteAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_P);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Paste");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_P);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Paste");
         }
 
         @Override
@@ -196,9 +195,9 @@ public class EditAction extends AbstractAction {
          */
         public DeleteAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_L);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-            putValue(Action.NAME, "Delete");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_L);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
+            putValue(NAME, "Delete");
         }
 
         @Override
@@ -228,9 +227,9 @@ public class EditAction extends AbstractAction {
          */
         public FindAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Find...");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_F);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Find...");
         }
 
         @Override
@@ -264,12 +263,12 @@ public class EditAction extends AbstractAction {
             this.jNotepad = jNotepad;
             this.searchDialog = searchDialog;
             if (searchDialog == null) {
-                putValue(Action.MNEMONIC_KEY, KeyEvent.VK_N);
+                putValue(MNEMONIC_KEY, KeyEvent.VK_N);
             } else {
                 putValue(MNEMONIC_KEY, KeyEvent.VK_F);
             }
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
-            putValue(Action.NAME, "Find Next");
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
+            putValue(NAME, "Find Next");
         }
 
         @Override
@@ -309,9 +308,9 @@ public class EditAction extends AbstractAction {
          */
         public ReplaceAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Replace...");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_R);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Replace...");
         }
 
         @Override
@@ -341,9 +340,9 @@ public class EditAction extends AbstractAction {
          */
         public GoToAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_G);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Go To...");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_G);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Go To...");
         }
 
         @Override
@@ -373,9 +372,9 @@ public class EditAction extends AbstractAction {
          */
         public SelectAllAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_A);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK));
-            putValue(Action.NAME, "Select All");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_A);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK));
+            putValue(NAME, "Select All");
         }
 
         @Override
@@ -405,9 +404,9 @@ public class EditAction extends AbstractAction {
          */
         public TimeDateAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_D);
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-            putValue(Action.NAME, "Time/Date");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_D);
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            putValue(NAME, "Time/Date");
         }
 
         @Override

@@ -109,7 +109,6 @@ public class GoToDialog extends BasicDialog {
             @Override
             public void windowDeactivated(WindowEvent e) {
                 performGoto = false;
-                dispose();
             }
         });
     }
@@ -121,7 +120,6 @@ public class GoToDialog extends BasicDialog {
         pack();
         centerDialog();
         setVisible(true);
-        dispose();
         
         return performGoto;
     }

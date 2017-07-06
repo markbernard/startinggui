@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 
 /**
  * Takes care of all actions for the Format menu. Menu actions will be internal classes of this class. 
@@ -39,8 +38,8 @@ public class FormatAction extends AbstractAction {
      * Set up values for the Format menu
      */
     public FormatAction() {
-        putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O);
-        putValue(Action.NAME, "Format");
+        putValue(MNEMONIC_KEY, KeyEvent.VK_O);
+        putValue(NAME, "Format");
     }
 
     @Override
@@ -61,8 +60,8 @@ public class FormatAction extends AbstractAction {
          */
         public WordWrapAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_W);
-            putValue(Action.NAME, "Word Wrap");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_W);
+            putValue(NAME, "Word Wrap");
         }
 
         @Override
@@ -91,8 +90,8 @@ public class FormatAction extends AbstractAction {
          */
         public FontAction(JNotepad jNotepad) {
             this.jNotepad = jNotepad;
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
-            putValue(Action.NAME, "Font...");
+            putValue(MNEMONIC_KEY, KeyEvent.VK_F);
+            putValue(NAME, "Font...");
         }
 
         @Override

@@ -38,7 +38,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -400,7 +399,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         InputStreamReader in = null;
         
         try {
-            in = new InputStreamReader(new FileInputStream(path), "UTF-8");
+            in = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8);
             StringBuilder content = new StringBuilder();
             char[] buffer = new char[32768];
             int read = -1;
@@ -411,8 +410,6 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
             undoManager.discardAllEdits();
             dirty = false;
             setTitle();
-        } catch (UnsupportedEncodingException e) {
-            //UTF-8 is built into Java so this exception should never be thrown
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(this, "Unable to find the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
         } catch (IOException e) {
@@ -566,8 +563,14 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Display a dialog for the user to search the text for something
      */
     public void find() {
-        SearchDialog dialog = new SearchDialog(parentFrame, this, false);
-        dialog.setVisible(true);
+        JNotepad self = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                SearchDialog dialog = new SearchDialog(parentFrame, self, false);
+                dialog.setVisible(true);
+            }
+        });
     }
     
     /**
@@ -612,8 +615,14 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * 
      */
     public void replace() {
-        SearchDialog dialog = new SearchDialog(parentFrame, this, true);
-        dialog.setVisible(true);
+        JNotepad self = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                SearchDialog dialog = new SearchDialog(parentFrame, self, true);
+                dialog.setVisible(true);
+            }
+        });
     }
     
     /**
@@ -662,24 +671,27 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Place the cursor on the beginning of the line number select by the user.
      */
     public void goTo() {
-        GoToDialog goToDialog = new GoToDialog(parentFrame, this);
-        if (goToDialog.showDialog()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+        JNotepad self = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                GoToDialog goToDialog = new GoToDialog(parentFrame, self);
+                if (goToDialog.showDialog()) {
                     int lineNumber = goToDialog.getLineNumber() - 1;
                     
                     if (lineNumber >= 0 && lineNumber <= textArea.getLineCount()) {
                         try {
                             textArea.setCaretPosition(textArea.getLineStartOffset(lineNumber));
                         } catch (BadLocationException e) {
-                            // should not occur since we already checked if the lineNumber is in range.
+                            // should not occur since we already 
+                            // checked if the lineNumber is in range.
                             e.printStackTrace();
                         }
                     }
                 }
-            });
-        }
+                goToDialog.dispose();
+            }
+        });
     }
 
     /**
@@ -770,18 +782,19 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Set the font to be used for editing and printing.
      */
     public void font() {
-        FontDialog fontDialog = new FontDialog(parentFrame, ApplicationPreferences.getCurrentFont());
-        if (fontDialog.showFontDialog()) {
-            Font selectedFont = fontDialog.getSelectedFont();
-            ApplicationPreferences.setCurrentFont(selectedFont);
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                FontDialog fontDialog = new FontDialog(parentFrame, 
+                        ApplicationPreferences.getCurrentFont());
+                if (fontDialog.showFontDialog()) {
+                    Font selectedFont = fontDialog.getSelectedFont();
+                    ApplicationPreferences.setCurrentFont(selectedFont);
                     textArea.setFont(selectedFont);
                 }
-            });
-        }
-        fontDialog.dispose();
+                fontDialog.dispose();
+            }
+        });
     }
 
     /**

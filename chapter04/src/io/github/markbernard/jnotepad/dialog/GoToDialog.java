@@ -109,7 +109,6 @@ public class GoToDialog extends BasicDialog {
             @Override
             public void windowDeactivated(WindowEvent e) {
                 performGoto = false;
-                dispose();
             }
         });
     }
@@ -129,6 +128,8 @@ public class GoToDialog extends BasicDialog {
      * @return The line number the user selected.
      */
     public int getLineNumber() {
-        return Integer.valueOf(lineNumberText.getText());
+        return Integer.valueOf(lineNumberText.getText().isEmpty() ? 
+                "1" : 
+                    lineNumberText.getText());
     }
 }

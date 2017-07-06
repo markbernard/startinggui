@@ -154,6 +154,7 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
                 dispose();
             }
         });
+        
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowDeactivated(WindowEvent e) {

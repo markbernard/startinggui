@@ -141,12 +141,7 @@ public class DialogAction {
         
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    dialog.setVisible(false);
-                }
-            }, "Cancel").start();
+            dialog.setVisible(false);
         }
     }
 }

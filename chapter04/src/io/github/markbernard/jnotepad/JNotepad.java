@@ -550,8 +550,14 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Display a dialog for the user to search the text for something
      */
     public void find() {
-        SearchDialog dialog = new SearchDialog(parentFrame, this, false);
-        dialog.setVisible(true);
+        JNotepad self = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                SearchDialog dialog = new SearchDialog(parentFrame, self, false);
+                dialog.setVisible(true);
+            }
+        });
     }
     
     /**
@@ -596,8 +602,14 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * 
      */
     public void replace() {
-        SearchDialog dialog = new SearchDialog(parentFrame, this, true);
-        dialog.setVisible(true);
+        JNotepad self = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                SearchDialog dialog = new SearchDialog(parentFrame, self, true);
+                dialog.setVisible(true);
+            }
+        });
     }
     
     /**
@@ -646,24 +658,27 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
      * Place the cursor on the beginning of the line number select by the user.
      */
     public void goTo() {
-        GoToDialog goToDialog = new GoToDialog(parentFrame, this);
-        if (goToDialog.showDialog()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
+        JNotepad self = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                GoToDialog goToDialog = new GoToDialog(parentFrame, self);
+                if (goToDialog.showDialog()) {
                     int lineNumber = goToDialog.getLineNumber() - 1;
                     
                     if (lineNumber >= 0 && lineNumber <= textArea.getLineCount()) {
                         try {
                             textArea.setCaretPosition(textArea.getLineStartOffset(lineNumber));
                         } catch (BadLocationException e) {
-                            // should not occur since we already checked if the lineNumber is in range.
+                            // should not occur since we already 
+                            // checked if the lineNumber is in range.
                             e.printStackTrace();
                         }
                     }
                 }
-            });
-        }
+                goToDialog.dispose();
+            }
+        });
     }
 
     /**

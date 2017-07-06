@@ -160,7 +160,6 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
             public void windowDeactivated(WindowEvent e) {
                 dispose();
             }
-            
         });
 
         setResizable(false);

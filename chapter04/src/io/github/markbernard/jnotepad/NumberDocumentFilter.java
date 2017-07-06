@@ -32,19 +32,16 @@ public class NumberDocumentFilter extends DocumentFilter {
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^\\d+$");
     
     @Override
-    public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
-        super.remove(fb, offset, length);
-    }
-
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+    public void insertString(FilterBypass fb, int offset, 
+            String string, AttributeSet attr) throws BadLocationException {
         if (containsOnlyNumeric(string)) {
             fb.insertString(offset, string, attr);
         }
     }
 
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+    public void replace(FilterBypass fb, int offset, int length, 
+            String text, AttributeSet attrs) throws BadLocationException {
         if (containsOnlyNumeric(text)) {
             fb.replace(offset, length, text, attrs);
         }
