@@ -197,9 +197,6 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         editMenu.add(editSelectAllItem);
         JMenuItem editTimeDateItem = new JMenuItem(new EditAction.TimeDateAction(this));
         editMenu.add(editTimeDateItem);
-        editMenu.addSeparator();
-        JMenuItem editSettingsItem = new JMenuItem(new EditAction.SettingsAction(this));
-        editMenu.add(editSettingsItem);
         
         JMenu formatMenu = new JMenu(new FormatAction());
         bar.add(formatMenu);

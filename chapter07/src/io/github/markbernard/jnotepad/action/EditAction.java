@@ -459,40 +459,4 @@ public class EditAction extends AbstractAction {
             }, "Time/Date").start();
         }
     }
-
-    /**
-     * Actions for the Edit > Time Date menu item.
-     * 
-     * @author Mark Bernard
-     */
-    public static class SettingsAction extends AbstractAction {
-        private static final long serialVersionUID = 1215020210624036643L;
-        private JNotepad jNotepad;
-
-        /**
-         * Set up values appropriate to the Time Date menu item.
-         * 
-         * @param jNotepad 
-         */
-        public SettingsAction(JNotepad jNotepad) {
-            this.jNotepad = jNotepad;
-            putValue(MNEMONIC_KEY, KeyEvent.VK_S);
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
-            putValue(NAME, "Settings...");
-            putValue(SMALL_ICON, 
-                    new IconGenerator("/res/icons/SettingsSmall.png").loadImage());
-            putValue(LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/Settings.png").loadImage());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.settings();
-                }
-            }, "Settings").start();
-        }
-    }
 }
