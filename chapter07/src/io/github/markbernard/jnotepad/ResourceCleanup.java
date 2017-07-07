@@ -20,6 +20,7 @@
 package io.github.markbernard.jnotepad;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 
@@ -51,6 +52,21 @@ public class ResourceCleanup {
         if (writer != null) {
             try {
                 writer.close();
+            } catch (IOException e) {
+                //cannot do anything
+            }
+        }
+    }
+
+    /**
+     * Close a outputstream safely.
+     * 
+     * @param out
+     */
+    public static final void close(OutputStream out) {
+        if (out != null) {
+            try {
+                out.close();
             } catch (IOException e) {
                 //cannot do anything
             }

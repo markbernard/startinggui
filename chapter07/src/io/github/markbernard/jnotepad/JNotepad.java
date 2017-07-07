@@ -20,6 +20,7 @@
 package io.github.markbernard.jnotepad;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -29,6 +30,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.print.PrinterException;
@@ -42,6 +44,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -50,6 +54,7 @@ import java.util.Date;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
+import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -67,12 +72,14 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import javax.swing.undo.UndoManager;
 
 import io.github.markbernard.jnotepad.action.EditAction;
@@ -90,7 +97,7 @@ import io.github.markbernard.jnotepad.dialog.GoToDialog;
  * 
  * @author Mark Bernard
  */
-public class JNotepad extends JPanel implements WindowListener, DocumentListener {
+public class JNotepad extends JPanel implements WindowListener, DocumentListener, KeyListener {
     private static final long serialVersionUID = -2119311360500754201L;
     private static final String APPLICATION_TITLE = "JNotepad";
     private static final String NEW_FILE_NAME = "Untitled";
@@ -101,6 +108,9 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     private JTextArea textArea;
     private JPanel statusBarPanel;
     private JLabel positionLabel;
+    private JLabel capsLockLabel;
+    private JLabel insertLabel;
+    private JLabel readOnlyLabel;
     private UndoManager undoManager;
     private JCheckBoxMenuItem formatWordWrap;
     private JToolBar toolbar;
@@ -112,6 +122,8 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     private String replaceTerm;
     private boolean findDownDirection;
     private boolean matchCase;
+    private boolean insertMode = true;
+    private boolean readOnly = false;
 
     /**
      * Set up the application before showing the window.
@@ -127,9 +139,12 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         parentFrame.addWindowListener(this);
         setLayout(new BorderLayout());
         textArea = new JTextArea();
+        textArea.addKeyListener(this);
         textArea.setLineWrap(ApplicationPreferences.isWordWrap());
         textArea.setWrapStyleWord(true);
-        textArea.getDocument().addDocumentListener(this);
+        PlainDocument document = (PlainDocument)textArea.getDocument();
+        document.addDocumentListener(this);
+        document.setDocumentFilter(new InsertDocumentFilter(this));
         undoManager = new UndoManager();
         textArea.getDocument().addUndoableEditListener(undoManager);
         textArea.setFont(ApplicationPreferences.getCurrentFont());
@@ -145,6 +160,10 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         createMenus();
         createStatusBar();
         createToolbar();
+
+        parentFrame.add(this, BorderLayout.CENTER);
+        parentFrame.setVisible(true);
+        textArea.requestFocusInWindow();
     }
     
     private void createMenus() {
@@ -222,32 +241,100 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     }
     
     private void createStatusBar() {
-        statusBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        statusBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel positionPanel = new JPanel(new BorderLayout());
+        statusBarPanel.add(positionPanel);
+        setStausBorder(positionPanel);
         positionLabel = new JLabel();
-        positionLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        statusBarPanel.add(positionLabel);
+        positionPanel.add(positionLabel, BorderLayout.WEST);
+        positionLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
+        
+        JPanel capsLockPanel = new JPanel(new BorderLayout());
+        statusBarPanel.add(capsLockPanel);
+        setStausBorder(capsLockPanel);
+        capsLockLabel = new JLabel("CAPS OFF");
+        capsLockPanel.add(capsLockLabel, BorderLayout.WEST);
+        capsLockLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
+        
+        JPanel insertPanel = new JPanel(new BorderLayout());
+        statusBarPanel.add(insertPanel);
+        setStausBorder(insertPanel);
+        insertLabel = new JLabel("INS");
+        insertPanel.add(insertLabel, BorderLayout.WEST);
+        insertLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
+        
+        JPanel readOnlyPanel = new JPanel(new BorderLayout());
+        statusBarPanel.add(readOnlyPanel);
+        setStausBorder(readOnlyPanel);
+        readOnlyLabel = new JLabel("Read/Write");
+        readOnlyPanel.add(readOnlyLabel, BorderLayout.WEST);
+        readOnlyLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
+        
         if (ApplicationPreferences.isStatusBar()) {
             add(statusBarPanel, BorderLayout.SOUTH);
         }
         updateStatusBar(textArea.getCaretPosition());
     }
     
+    private void setStausBorder(JPanel panel) {
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEtchedBorder(EtchedBorder.RAISED), 
+                BorderFactory.createEmptyBorder(1, 3, 1, 3)));
+    }
+    
     private void updateStatusBar(int position) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                try {
-                    int line = textArea.getLineOfOffset(position);
-                    int column = position - textArea.getLineStartOffset(line);
-                    positionLabel.setText(String.format("Ln %d, Col %d", 
-                            (line + 1), (column + 1)));
-                } catch (Exception e) {
-                    //not critical if the position in the
-                    //status bar does not get updated.
-                    e.printStackTrace();
-                }
+                updateCursorLocation(position);
+                updateCapsLock();
+                updateInsertMode();
+                updateReadOnly();
             }
         });
+    }
+    
+    private void updateCursorLocation(int position) {
+        try {
+            int line = textArea.getLineOfOffset(position);
+            int column = position - textArea.getLineStartOffset(line);
+            positionLabel.setText(String.format("Ln %d, Col %d", 
+                    (line + 1), (column + 1)));
+        } catch (Exception e) {
+            //not critical if the position in the
+            //status bar does not get updated.
+            e.printStackTrace();
+        }
+    }
+    
+    private void updateCapsLock() {
+        if (Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK)) {
+            capsLockLabel.setForeground(Color.BLACK);
+            capsLockLabel.setText("CAPS ON ");
+        } else {
+            capsLockLabel.setForeground(Color.LIGHT_GRAY);
+            capsLockLabel.setText("CAPS OFF");
+        }
+    }
+    
+    private void updateInsertMode() {
+        if (insertMode) {
+            insertLabel.setForeground(Color.LIGHT_GRAY);
+            insertLabel.setText("INS");
+        } else {
+            insertLabel.setForeground(Color.BLACK);
+            insertLabel.setText("OVR");
+        }
+    }
+
+    private void updateReadOnly() {
+        if (readOnly) {
+            readOnlyLabel.setForeground(Color.BLACK);
+            readOnlyLabel.setText("Read Only ");
+        } else {
+            readOnlyLabel.setForeground(Color.LIGHT_GRAY);
+            readOnlyLabel.setText("Read/Write");
+        }
     }
 
     private void createToolbar() {
@@ -299,6 +386,24 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     public void windowOpened(WindowEvent e) {}
 
     @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_CAPS_LOCK) {
+            updateCapsLock();
+        } else if (e.getKeyCode() == KeyEvent.VK_INSERT) {
+            insertMode = !insertMode;
+            updateInsertMode();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
     public void changedUpdate(DocumentEvent e) {
         documentUpdated();
     }
@@ -320,6 +425,30 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         }
     }
 
+    /**
+     * If overwrite mode is active then characters are removed when new characters are typed.
+     * 
+     * @param position
+     * @param length
+     */
+    public void processInsert(int position, int length) {
+        if (!insertMode) {
+            Document document = textArea.getDocument();
+            insertMode = true;
+            try {
+                int trimLength = length;
+                if (position + trimLength > textArea.getText().length()) {
+                    trimLength = textArea.getText().length() - position;
+                }
+                if (trimLength > 0) {
+                    document.remove(position, trimLength);
+                }
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+            insertMode = false;
+        }
+    }
     /**
      * Exits the application with cleanup.
      */
@@ -356,9 +485,11 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
             fileName = NEW_FILE_NAME;
             textArea.setText("");
             dirty = false;
+            readOnly = false;
+            updateReadOnly();
             setTitle();
         }
-        updateStatusBar(textArea.getCaretPosition());
+        updateCursorLocation(textArea.getCaretPosition());
     }
     
     /**
@@ -496,9 +627,28 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
             while ((read = in.read(buffer)) > -1) {
                 content.append(buffer, 0, read);
             }
+            in.close();
             textArea.setText(content.toString());
             undoManager.discardAllEdits();
             dirty = false;
+            readOnly = !path.canWrite();
+            if (!readOnly) {
+                FileOutputStream fout = null;
+                FileLock lock = null;
+                try {
+                    fout = new FileOutputStream(path);
+                    FileChannel channel = fout.getChannel();
+                    lock = channel.tryLock();
+                } catch (Exception e) {
+                    readOnly = true;
+                } finally {
+                    if (lock != null) {
+                        lock.release();
+                    }
+                    ResourceCleanup.close(fout);
+                }
+            }
+            updateReadOnly();
             setTitle();
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(this, "Unable to find the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
@@ -840,6 +990,13 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
     }
 
     /**
+     * @return the insertMode
+     */
+    public boolean isInsertMode() {
+        return insertMode;
+    }
+
+    /**
      * @param findDownDirection the findDownDirection to set
      */
     public void setFindDownDirection(boolean findDownDirection) {
@@ -956,9 +1113,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
                 JFrame frame = new JFrame();
                 frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
                 frame.setLayout(new BorderLayout());
-                JNotepad jNotepad = new JNotepad(frame);
-                frame.add(jNotepad, BorderLayout.CENTER);
-                frame.setVisible(true);
+                new JNotepad(frame);
             }
         });
     }
