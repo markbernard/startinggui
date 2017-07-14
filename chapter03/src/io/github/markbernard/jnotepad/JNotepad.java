@@ -36,6 +36,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -125,7 +127,12 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
 
     @Override
     public void windowClosing(WindowEvent e) {
-        exit();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                exit();
+            }
+        }, "Exit").start();
     }
 
     @Override
@@ -165,6 +172,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             saveCompleted = save();
         } else if (status.equals(DirtyStatus.CANCEL_ACTION)) {
             saveCompleted = false;
+            parentFrame.setVisible(true);
         }
 
         if (saveCompleted) {
@@ -208,15 +216,22 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         }
         
         if (saveSuccessful) {
-            String filePath = ApplicationPreferences.getCurrentFilePath();
-            JFileChooser fileChooser = new JFileChooser(filePath);
-            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                fileName = selectedFile.getName();
-                ApplicationPreferences.setCurrentFilePath(
-                        selectedFile.getParentFile().getAbsolutePath().replace("\\", "/"));
-                loadFile(selectedFile);
-            }
+            JNotepad self = this;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    String filePath = ApplicationPreferences.getCurrentFilePath();
+                    JFileChooser fileChooser = new JFileChooser(filePath);
+                    if (fileChooser.showOpenDialog(self) == JFileChooser.APPROVE_OPTION) {
+                        File selectedFile = fileChooser.getSelectedFile();
+                        fileName = selectedFile.getName();
+                        ApplicationPreferences.setCurrentFilePath(
+                                selectedFile.getParentFile().getAbsolutePath()
+                                .replace("\\", "/"));
+                        loadFile(selectedFile);
+                    }
+                }
+            });
         }
     }
     
@@ -272,40 +287,70 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * @return false if the user cancels the file save dialog, true otherwise
      */
     public boolean saveAs() {
-        boolean result = true;
+        Map<String, Boolean> result = new HashMap<String, Boolean>();
+        result.put("result", Boolean.TRUE);
+        JNotepad self = this;
         
-        String filePath = ApplicationPreferences.getCurrentFilePath();
-        JFileChooser fileChooser = new JFileChooser(filePath);
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            fileName = selectedFile.getName();
-            ApplicationPreferences.setCurrentFilePath(
-                    selectedFile.getParentFile().getAbsolutePath().replace("\\", "/"));
-            saveFile(selectedFile.getAbsolutePath());
-            dirty = false;
-            setTitle();
-        } else {
-            result = false;
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    String filePath = ApplicationPreferences.getCurrentFilePath();
+                    JFileChooser fileChooser = new JFileChooser(filePath);
+                    if (fileChooser.showSaveDialog(self) == JFileChooser.APPROVE_OPTION) {
+                        File selectedFile = fileChooser.getSelectedFile();
+                        fileName = selectedFile.getName();
+                        ApplicationPreferences.setCurrentFilePath(
+                                selectedFile.getParentFile().getAbsolutePath()
+                                .replace("\\", "/"));
+                        saveFile(selectedFile.getAbsolutePath());
+                        dirty = false;
+                        setTitle();
+                    } else {
+                        result.put("result", Boolean.FALSE);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("result", Boolean.FALSE);
         }
         
-        return result;
+        return result.get("result").booleanValue();
     }
 
     private DirtyStatus isDirty() {
-        DirtyStatus result = DirtyStatus.DONT_SAVE_FILE;
+        final Map<String, DirtyStatus> result = new HashMap<String, DirtyStatus>();
+        result.put("result", DirtyStatus.DONT_SAVE_FILE);
+        JNotepad self = this;
         
         if (dirty) {
-            int choice = JOptionPane.showConfirmDialog(this, "There are changes in the current document.\nClick 'Yes' to save changes.\nClick 'No' to discard changes.\nClick 'Cancel' to stop the current action.", "Save Changes?", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-            if (choice == JOptionPane.YES_OPTION) {
-                result = DirtyStatus.SAVE_FILE;
-            } else if (choice == JOptionPane.NO_OPTION) {
-                result = DirtyStatus.DONT_SAVE_FILE;
-            } else if (choice == JOptionPane.CANCEL_OPTION) {
-                result = DirtyStatus.CANCEL_ACTION;
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        int choice = JOptionPane.showConfirmDialog(self, 
+                                "There are changes in the current document.\n" +
+                                "Click 'Yes' to save changes.\n" +
+                                "Click 'No' to discard changes.\n" +
+                                "Click 'Cancel' to stop the current action.", 
+                                "Save Changes?", 
+                                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                        if (choice == JOptionPane.YES_OPTION) {
+                            result.put("result", DirtyStatus.SAVE_FILE);
+                        } else if (choice == JOptionPane.NO_OPTION) {
+                            result.put("result", DirtyStatus.DONT_SAVE_FILE);
+                        } else if (choice == JOptionPane.CANCEL_OPTION) {
+                            result.put("result", DirtyStatus.CANCEL_ACTION);
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         
-        return result;
+        return result.get("result");
     }
     
     /**
@@ -352,26 +397,37 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         if (printRequestAttributeSet == null) {
             printRequestAttributeSet = new HashPrintRequestAttributeSet();
         }
-        PrinterJob.getPrinterJob().pageDialog(printRequestAttributeSet);
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                PrinterJob.getPrinterJob().pageDialog(printRequestAttributeSet);
+            }
+        });
     }
 
     /**
      * Perform the printing request.
      */
     public void doPrint() {
-        try {
-            if (printRequestAttributeSet == null) {
-                printRequestAttributeSet = new HashPrintRequestAttributeSet();
-            }
-            textArea.print(null, 
-                    new MessageFormat("page {0}"), 
-                    true, 
-                    PrinterJob.getPrinterJob().getPrintService(), 
-                    printRequestAttributeSet, 
-                    true);
-        } catch (PrinterException e) {
-            e.printStackTrace();
+        if (printRequestAttributeSet == null) {
+            printRequestAttributeSet = new HashPrintRequestAttributeSet();
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    textArea.print(null, 
+                            new MessageFormat("page {0}"), 
+                            true, 
+                            PrinterJob.getPrinterJob().getPrintService(), 
+                            printRequestAttributeSet, 
+                            true);
+                } catch (PrinterException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
     
     /**
