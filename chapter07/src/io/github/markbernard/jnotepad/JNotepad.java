@@ -42,6 +42,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.io.Writer;
 import java.net.URI;
 import java.nio.channels.FileChannel;
@@ -633,11 +634,11 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
             dirty = false;
             readOnly = !path.canWrite();
             if (!readOnly) {
-                FileOutputStream fout = null;
+                RandomAccessFile rout = null;
                 FileLock lock = null;
                 try {
-                    fout = new FileOutputStream(path);
-                    FileChannel channel = fout.getChannel();
+                    rout = new RandomAccessFile(path, "rw");
+                    FileChannel channel = rout.getChannel();
                     lock = channel.tryLock();
                 } catch (Exception e) {
                     readOnly = true;
@@ -645,7 +646,7 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
                     if (lock != null) {
                         lock.release();
                     }
-                    ResourceCleanup.close(fout);
+                    ResourceCleanup.close(rout);
                 }
             }
             updateReadOnly();
