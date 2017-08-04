@@ -34,29 +34,20 @@ import java.awt.event.WindowListener;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
@@ -84,8 +75,6 @@ import io.github.markbernard.jnotepad.dialog.SearchDialog;
 public class JNotepad extends JPanel implements WindowListener, KeyListener {
     private static final long serialVersionUID = -2119311360500754201L;
     private static final String APPLICATION_TITLE = "JNotepad";
-    private static final String NEW_FILE_NAME = "Untitled";
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     private JFrame parentFrame;
     private JTabbedPane documentTabs;
@@ -98,11 +87,9 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     private UndoManager undoManager;
     private JCheckBoxMenuItem formatWordWrap;
     private JToolBar toolbar;
-    private List<TextDocument> openDocuments;
+    private JMenu fileRecentDocumentsMenu;
 
     private int newDocumentCounter;
-    private boolean dirty;
-    private String fileName;
     private PrintRequestAttributeSet printRequestAttributeSet;
     private String findTerm;
     private String replaceTerm;
@@ -118,10 +105,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      */
     public JNotepad(JFrame parentFrame) {
         this.parentFrame = parentFrame;
-        openDocuments = new ArrayList<>();
-        fileName = NEW_FILE_NAME;
         ApplicationPreferences.loadPrefs(parentFrame);
-        dirty = false;
         parentFrame.addWindowListener(this);
         setLayout(new BorderLayout());
         documentTabs = new JTabbedPane(JTabbedPane.TOP);
@@ -129,9 +113,11 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         documentTabs.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                currentDocument = (TextDocument)documentTabs.getSelectedComponent();
-                setTitle();
-                currentDocument.shown();
+                if (documentTabs.getTabCount() > 0) {
+                    currentDocument = (TextDocument)documentTabs.getSelectedComponent();
+                    setTitle();
+                    currentDocument.shown();
+                }
             }
         });
         createMenus();
@@ -164,6 +150,10 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         fileMenu.add(filePageSetupItem);
         JMenuItem filePrintItem = new JMenuItem(new FileAction.PrintAction(this));
         fileMenu.add(filePrintItem);
+        fileMenu.addSeparator();
+        fileRecentDocumentsMenu = new JMenu(new FileAction.FileRecentDocumentsAction());
+        fileMenu.add(fileRecentDocumentsMenu);
+        updateRecentDocumentsMenu();
         fileMenu.addSeparator();
         JMenuItem fileExitItem = new JMenuItem(new FileAction.ExitAction(this));
         fileMenu.add(fileExitItem);
@@ -217,6 +207,20 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         helpMenu.addSeparator();
         JMenuItem helpAbout = new JMenuItem(new HelpAction.AboutAction(this));
         helpMenu.add(helpAbout);
+    }
+    
+    private void updateRecentDocumentsMenu() {
+        List<String> recentDocuments = ApplicationPreferences.getRecentDocuments();
+        fileRecentDocumentsMenu.removeAll();
+        if (recentDocuments.size() > 0) {
+            for (int i=0;i<recentDocuments.size();i++) {
+                fileRecentDocumentsMenu.add(new JMenuItem(new FileAction.FileRecentDocumentsAction.FileRecentDocumentsOpenDocumentAction(i, recentDocuments.get(i), this)));
+            }
+        } else {
+            JMenuItem fileRecentDocumentsNoneItem = new JMenuItem("<no recent documents>");
+            fileRecentDocumentsMenu.add(fileRecentDocumentsNoneItem);
+            fileRecentDocumentsNoneItem.setEnabled(false);
+        }
     }
     
     private void createStatusBar() {
@@ -379,15 +383,18 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Exits the application with cleanup.
      */
     public void exit() {
-        DirtyStatus status = isDirty();
         
         boolean saveCompleted = true;
-        if (status.equals(DirtyStatus.SAVE_FILE)) {
-            saveCompleted = save();
-        } else if (status.equals(DirtyStatus.CANCEL_ACTION)) {
-            saveCompleted = false;
+        while (documentTabs.getTabCount() > 0) {
+            TextDocument doc = (TextDocument)documentTabs.getSelectedComponent();
+            saveCompleted = doc.requestClose(false);
+            if (saveCompleted) {
+                documentTabs.removeTabAt(documentTabs.indexOfComponent(doc));
+            } else {
+                break;
+            }
         }
-
+        
         if (saveCompleted) {
             ApplicationPreferences.savePrefs(parentFrame);
             System.exit(0);
@@ -399,39 +406,55 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      */
     public void newDocument() {
         TextDocument doc = new TextDocument(this, newDocumentCounter++);
-        openDocuments.add(doc);
-        currentDocument = doc;
-        documentTabs.addTab(doc.getTitle(), doc);
-        documentTabs.setSelectedComponent(doc);
+        addDocumentToTabs(doc);
     }
     
     /**
      * Show a file dialog and load the selected file.
      */
     public void load() {
-        DirtyStatus result = isDirty();
-        
-        boolean saveSuccessful = true;
-        if (result.equals(DirtyStatus.SAVE_FILE)) {
-            saveSuccessful = save();
-        } else if (result.equals(DirtyStatus.CANCEL_ACTION)) {
-            saveSuccessful = false;
-        }
-        
-        if (saveSuccessful) {
-            String filePath = ApplicationPreferences.getCurrentFilePath();
-            JFileChooser fileChooser = new JFileChooser(filePath);
-            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                fileName = selectedFile.getName();
-                ApplicationPreferences.setCurrentFilePath(
-                        selectedFile.getParentFile().getAbsolutePath());
-                TextDocument doc = new TextDocument(this, selectedFile);
-                openDocuments.add(doc);
-                documentTabs.addTab(doc.getTitle(), doc);
-                documentTabs.setSelectedComponent(doc);
+        String filePath = ApplicationPreferences.getCurrentFilePath();
+        JFileChooser fileChooser = new JFileChooser(filePath);
+        fileChooser.setMultiSelectionEnabled(true);
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File[] selectedFiles = fileChooser.getSelectedFiles();
+            for (File selectedFile : selectedFiles) {
+                loadFile(selectedFile);
             }
         }
+    }
+    
+    private void loadFile(File selectedFile) {
+        TextDocument doc = new TextDocument(this, selectedFile);
+        addDocumentToTabs(doc);
+        ApplicationPreferences.addDocument(doc.getFullFilePath());
+        updateRecentDocumentsMenu();
+    }
+    
+    /**
+     * @param filePath
+     */
+    public void openRecentDocument(String filePath) {
+        boolean found = false;
+        for (int i=0;i<documentTabs.getTabCount();i++) {
+            TextDocument doc = (TextDocument)documentTabs.getComponentAt(i);
+            if (filePath.equals(doc.getFullFilePath())) {
+                documentTabs.setSelectedComponent(doc);
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            loadFile(new File(filePath));
+        }
+    }
+
+    private void addDocumentToTabs(TextDocument doc) {
+        documentTabs.addTab(null, doc);
+        TabComponent tabComponent = new TabComponent(this, doc.getTitle());
+        documentTabs.setTabComponentAt(documentTabs.indexOfComponent(doc), tabComponent);
+        documentTabs.setSelectedComponent(doc);
     }
     
     /**
@@ -442,36 +465,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * @return true if the save was not interrupted, false otherwise
      */
     public boolean save() {
-        if (fileName.equals(NEW_FILE_NAME)) {
-            return saveAs();
-        } else {
-            saveFile(ApplicationPreferences.getCurrentFilePath() + FILE_SEPARATOR + fileName);
-            dirty = false;
-            setTitle();
-            
-            return true;
-        }
-    }
-    
-    private void saveFile(String path) {
-        final JComponent parentComponent = this;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Writer out = null;
-                
-                try {
-                    out = new OutputStreamWriter(new FileOutputStream(path), StandardCharsets.UTF_8);
-                    out.write(currentDocument.getTextArea().getText());
-                } catch (FileNotFoundException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    ResourceCleanup.close(out);
-                }
-            }
-        });
+        return currentDocument.save();
     }
     
     /**
@@ -481,51 +475,16 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * @return false if the user cancels the file save dialog, true otherwise
      */
     public boolean saveAs() {
-        boolean result = true;
+        boolean saved = currentDocument.saveAs();
         
-        String filePath = ApplicationPreferences.getCurrentFilePath();
-        JFileChooser fileChooser = new JFileChooser(filePath);
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            fileName = selectedFile.getName();
-            ApplicationPreferences.setCurrentFilePath(
-                    selectedFile.getParentFile().getAbsolutePath().replace("\\", "/"));
-            saveFile(selectedFile.getAbsolutePath());
-            dirty = false;
-            setTitle();
-        } else {
-            result = false;
+        if (saved) {
+            ApplicationPreferences.addDocument(currentDocument.getFullFilePath());
+            updateRecentDocumentsMenu();
         }
         
-        return result;
+        return saved;
     }
 
-    private DirtyStatus isDirty() {
-        DirtyStatus result = DirtyStatus.DONT_SAVE_FILE;
-        
-        if (dirty) {
-            String filePath = (fileName.equals(NEW_FILE_NAME) ? fileName : 
-                ApplicationPreferences.getCurrentFilePath() + FILE_SEPARATOR + fileName);
-            int choice = JOptionPane.showOptionDialog(this, 
-                    "Do you want to save changes to " + filePath + "?", 
-                    "JNotepad", 
-                    JOptionPane.YES_NO_CANCEL_OPTION, 
-                    JOptionPane.PLAIN_MESSAGE,
-                    null,
-                    new String[] {"Save", "Don't Save", "Cancel"}, 
-                    "Save");
-            if (choice == JOptionPane.YES_OPTION) {
-                result = DirtyStatus.SAVE_FILE;
-            } else if (choice == JOptionPane.NO_OPTION) {
-                result = DirtyStatus.DONT_SAVE_FILE;
-            } else if (choice == JOptionPane.CANCEL_OPTION) {
-                result = DirtyStatus.CANCEL_ACTION;
-            }
-        }
-        
-        return result;
-    }
-    
     /**
      * Update the main title with the currently selected tab.
      */
@@ -534,6 +493,9 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             @Override
             public void run() {
                 parentFrame.setTitle(currentDocument.getTitle() + " - " + APPLICATION_TITLE);
+                int index = documentTabs.indexOfComponent(currentDocument);
+                TabComponent tabComponent = (TabComponent) documentTabs.getTabComponentAt(index);
+                tabComponent.setName(currentDocument.getTitle());
             }
         });
     }
@@ -651,33 +613,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     public void findNext() {
         if (findTerm != null && !findTerm.isEmpty()) {
             currentDocument.findNext(findTerm, matchCase, findDownDirection);
-//            String localFindTerm = findTerm;
-//            if (!matchCase) {
-//                localFindTerm = localFindTerm.toLowerCase();
-//            }
-//            if (findDownDirection) {
-//                int findStart = textArea.getSelectionEnd();
-//                String text = textArea.getText();
-//                if (!matchCase) {
-//                    text = text.toLowerCase();
-//                }
-//                int index = text.indexOf(localFindTerm, findStart);
-//                if (index > -1) {
-//                    textArea.setSelectionStart(index);
-//                    textArea.setSelectionEnd(index + findTerm.length());
-//                }
-//            } else {
-//                int findStart = textArea.getSelectionStart();
-//                String text = textArea.getText().substring(0, findStart);
-//                if (!matchCase) {
-//                    text = text.toLowerCase();
-//                }
-//                int index = text.lastIndexOf(localFindTerm);
-//                if (index > -1) {
-//                    textArea.setSelectionStart(index);
-//                    textArea.setSelectionEnd(index + findTerm.length());
-//                }
-//            }
         } else {
             find();
         }
@@ -705,16 +640,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             @Override
             public void run() {
                 currentDocument.performReplace(findTerm, replaceTerm, matchCase);
-//                if (findTerm != null && replaceTerm != null && !findTerm.isEmpty() && 
-//                        textArea.getSelectionStart() != textArea.getSelectionEnd()) {
-//                    String selectedText = textArea.getSelectedText();
-//                    if ((matchCase && findTerm.equals(selectedText)) || 
-//                            (!matchCase && findTerm.equalsIgnoreCase(selectedText))) {
-//                        textArea.replaceSelection(replaceTerm);
-//                        textArea.setSelectionStart(textArea.getSelectionEnd());
-//                        findNext();
-//                    }
-//                }
             }
         });
     }
@@ -727,16 +652,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             @Override
             public void run() {
                 currentDocument.replaceAll(findTerm, replaceTerm, matchCase);
-//                if (findTerm != null && replaceTerm != null && !findTerm.isEmpty()) {
-//                    textArea.setCaretPosition(0);
-//                    findDownDirection = true;
-//                    findNext();
-//                    while (findTerm.equals(textArea.getSelectedText())) {
-//                        textArea.replaceSelection(replaceTerm);
-//                        textArea.setSelectionStart(textArea.getSelectionEnd());
-//                        findNext();
-//                    }
-//                }
             }
         });
     }
@@ -745,26 +660,10 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Place the cursor on the beginning of the line number select by the user.
      */
     public void goTo() {
-//        JNotepad self = this;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 currentDocument.goTo(parentFrame);
-//                GoToDialog goToDialog = new GoToDialog(parentFrame, self);
-//                if (goToDialog.showDialog()) {
-//                    int lineNumber = goToDialog.getLineNumber() - 1;
-//                    
-//                    if (lineNumber >= 0 && lineNumber <= textArea.getLineCount()) {
-//                        try {
-//                            textArea.setCaretPosition(textArea.getLineStartOffset(lineNumber));
-//                        } catch (BadLocationException e) {
-//                            // should not occur since we already 
-//                            // checked if the lineNumber is in range.
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//                goToDialog.dispose();
             }
         });
     }
@@ -777,8 +676,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             @Override
             public void run() {
                 currentDocument.selectAll();
-//                textArea.setSelectionStart(0);        
-//                textArea.setSelectionEnd(textArea.getText().length());
             }
         });
     }
@@ -791,10 +688,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             @Override
             public void run() {
                 currentDocument.timeDate();
-//                String timeDateString = DATE_FORMAT.format(new Date());
-//                int start = textArea.getSelectionStart();
-//                textArea.replaceSelection(timeDateString);
-//                textArea.setCaretPosition(start + timeDateString.length());
             }
         });
     }
@@ -871,7 +764,8 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
                 if (fontDialog.showFontDialog()) {
                     Font selectedFont = fontDialog.getSelectedFont();
                     ApplicationPreferences.setCurrentFont(selectedFont);
-                    for (TextDocument doc : openDocuments) {
+                    for (int i=0;i<documentTabs.getTabCount();i++) {
+                        TextDocument doc = (TextDocument)documentTabs.getComponentAt(i);
                         doc.setSelectedFont(selectedFont);
                     }
                 }
@@ -923,6 +817,22 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     }
     
     /**
+     * @param tabComponent
+     */
+    public void closeTab(TabComponent tabComponent) {
+        int index = documentTabs.indexOfTabComponent(tabComponent);
+        if (index > -1) {
+            TextDocument doc = (TextDocument) documentTabs.getComponentAt(index);
+            if (doc.requestClose(documentTabs.getTabCount() == 1)) {
+                if (documentTabs.getTabCount() == 1) {
+                    newDocument();
+                }
+                documentTabs.remove(doc);
+            }
+        }
+    }
+
+    /**
      * Main application starting point.
      * 
      * @param args
@@ -944,9 +854,5 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
                 new JNotepad(frame);
             }
         });
-    }
-    
-    enum DirtyStatus {
-        SAVE_FILE, DONT_SAVE_FILE, CANCEL_ACTION;
     }
 }

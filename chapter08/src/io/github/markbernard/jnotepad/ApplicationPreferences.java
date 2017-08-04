@@ -20,6 +20,8 @@
 package io.github.markbernard.jnotepad;
 
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -41,12 +43,14 @@ public class ApplicationPreferences {
     private static final String FONT_FAMILY = "font.family";
     private static final String FONT_STYLE = "font.style";
     private static final String FONT_SIZE = "font.size";
+    private static final String RECENT_DOCUMENTS = "recent.documents";
     
     private static String currentFileName = "Untitled";
     private static String currentFilePath;
     private static boolean wordWrap;
     private static boolean statusBar;
     private static Font currentFont;
+    private static List<String> recentDocuments = new ArrayList<>();
     
     /**
      * Load state from the user preferences store and apply that state to 
@@ -68,6 +72,14 @@ public class ApplicationPreferences {
         wordWrap = prefs.getBoolean(WORD_WRAP, false);
         statusBar = prefs.getBoolean(STATUS_BAR, true);
         currentFont = new Font(prefs.get(FONT_FAMILY, "monospaced"), prefs.getInt(FONT_STYLE, Font.PLAIN), prefs.getInt(FONT_SIZE, 16));
+        for (int i=0;i<9;i++) {
+            String document = prefs.get(i + RECENT_DOCUMENTS, null);
+            if (document != null) {
+                recentDocuments.add(document);
+            } else {
+                break;
+            }
+        }
     }
 
     /**
@@ -94,6 +106,9 @@ public class ApplicationPreferences {
         prefs.put(FONT_FAMILY, currentFont.getFamily());
         prefs.putInt(FONT_STYLE, currentFont.getStyle());
         prefs.putInt(FONT_SIZE, currentFont.getSize());
+        for (int i=0;i<recentDocuments.size();i++) {
+            prefs.put(i + RECENT_DOCUMENTS, recentDocuments.get(i));
+        }
     }
 
     /**
@@ -164,5 +179,23 @@ public class ApplicationPreferences {
      */
     public static void setCurrentFont(Font currentFont) {
         ApplicationPreferences.currentFont = currentFont;
+    }
+    
+    /**
+     * @param document
+     */
+    public static void addDocument(String document) {
+        recentDocuments.remove(document);
+        recentDocuments.add(0, document);
+        while (recentDocuments.size() > 9) {
+            recentDocuments.remove(9);
+        }
+    }
+
+    /**
+     * @return the recentDocuments
+     */
+    public static List<String> getRecentDocuments() {
+        return new ArrayList<>(recentDocuments);
     }
 }

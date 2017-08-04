@@ -301,4 +301,61 @@ public class FileAction extends AbstractAction {
             }, "Exit").start();
         }
     }
+    
+    /**
+     * Actions for the File > Recent Documents sub menu.
+     * 
+     * @author Mark Bernard
+     */
+    public static class FileRecentDocumentsAction extends AbstractAction {
+        private static final long serialVersionUID = -8538598403541393623L;
+
+        /**
+         * Set up values appropriate to the Recent Documents sub menu.
+         */
+        public FileRecentDocumentsAction() {
+            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
+            putValue(Action.NAME, "Recent Documents");
+        }
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+        }
+        
+        /**
+         * Actions for the File > Recent Documents > selected document menu item.
+         * 
+         * @author Mark Bernard
+         */
+        public static class FileRecentDocumentsOpenDocumentAction extends AbstractAction {
+            private static final long serialVersionUID = -8560848798824824961L;
+
+            private String filePath;
+            private JNotepad jNotepad;
+
+            /**
+             * Set up values appropriate to the selected document menu item.
+             * 
+             * @param item
+             * @param filePath
+             * @param jNotepad
+             */
+            public FileRecentDocumentsOpenDocumentAction(int item, String filePath, JNotepad jNotepad) {
+                this.filePath = filePath;
+                this.jNotepad = jNotepad;
+                putValue(Action.MNEMONIC_KEY, KeyEvent.VK_1 + item);
+                putValue(Action.NAME, (item + 1) + ". " + filePath);
+                putValue(Action.SHORT_DESCRIPTION, "Open document at " + filePath + ".");
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        jNotepad.openRecentDocument(filePath);
+                    }
+                }, "Open " + filePath).start();
+            }
+        }
+    }
 }

@@ -21,17 +21,22 @@ package io.github.markbernard.jnotepad;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
+import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
@@ -41,13 +46,17 @@ import java.util.Date;
 
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -62,16 +71,18 @@ import io.github.markbernard.jnotepad.dialog.GoToDialog;
 /**
  * @author Mark Bernard
  */
-public class TextDocument extends JPanel implements DocumentListener {
+public class TextDocument extends JPanel implements DocumentListener, KeyListener {
     private static final long serialVersionUID = -6937922244390572212L;
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm aa yyyy-MM-dd");
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     
     private JNotepad jNotepad;
     private JTextArea textArea;
-    
+    private JScrollPane textScroll;
+
     private String newFileName = "";
     private String fileName;
-    private String filePath;
+    private String filePath = "";
     private boolean dirty;
     private boolean readOnly;
     private UndoManager undoManager;
@@ -93,15 +104,7 @@ public class TextDocument extends JPanel implements DocumentListener {
      */
     public TextDocument(JNotepad jNotepad, File file) {
         this.jNotepad = jNotepad;
-        String path = file.getAbsolutePath().replace("\\", "/");
-        int index = path.lastIndexOf("/");
-        if (index > -1) {
-            filePath = path.substring(0, index);
-            fileName = path.substring(index + 1);
-        } else {
-            filePath = "";
-            fileName = path;
-        }
+        parseFileName(file.getAbsolutePath().replace("\\", "/"));
         createGui();
         loadFile(file);
     }
@@ -110,8 +113,8 @@ public class TextDocument extends JPanel implements DocumentListener {
         dirty = false;
         setLayout(new BorderLayout());
         textArea = new JTextArea();
-        JScrollPane scroll = new JScrollPane(textArea);
-        add(scroll, BorderLayout.CENTER);
+        textScroll = new JScrollPane(textArea);
+        add(textScroll, BorderLayout.CENTER);
         textArea.addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
@@ -122,6 +125,7 @@ public class TextDocument extends JPanel implements DocumentListener {
         textArea.setLineWrap(ApplicationPreferences.isWordWrap());
         textArea.setWrapStyleWord(true);
         textArea.addKeyListener(jNotepad);
+        textArea.addKeyListener(this);
         undoManager = new UndoManager();
         textArea.getDocument().addUndoableEditListener(undoManager);
         textArea.setFont(ApplicationPreferences.getCurrentFont());
@@ -341,20 +345,6 @@ public class TextDocument extends JPanel implements DocumentListener {
     }
 
     /**
-     * @return the newFileName
-     */
-    public String getNewFileName() {
-        return newFileName;
-    }
-
-    /**
-     * @param newFileName the newFileName to set
-     */
-    public void setNewFileName(String newFileName) {
-        this.newFileName = newFileName;
-    }
-
-    /**
      * @return the fileName
      */
     public String getFileName() {
@@ -383,6 +373,13 @@ public class TextDocument extends JPanel implements DocumentListener {
     }
 
     /**
+     * @return The full path to the file.
+     */
+    public String getFullFilePath() {
+        return filePath.replace("/", FILE_SEPARATOR) + FILE_SEPARATOR + fileName;
+    }
+
+    /**
      * @return the dirty
      */
     public boolean isDirty() {
@@ -402,6 +399,10 @@ public class TextDocument extends JPanel implements DocumentListener {
     public void shown() {
         textArea.requestFocusInWindow();
         updateStatusBar(textArea.getCaretPosition());
+        if (!fileName.equals(newFileName)) {
+            ApplicationPreferences.setCurrentFileName(fileName);
+            ApplicationPreferences.setCurrentFilePath(filePath);
+        }
     }
     
     private void updateStatusBar(int position) {
@@ -474,8 +475,6 @@ public class TextDocument extends JPanel implements DocumentListener {
                     ResourceCleanup.close(rout);
                 }
             }
-//            updateReadOnly();
-//            setTitle();
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(this, "Unable to find the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
         } catch (IOException e) {
@@ -499,6 +498,157 @@ public class TextDocument extends JPanel implements DocumentListener {
         targetMap.remove(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
         targetMap.remove(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
     }
+    
+    /**
+     * Save an existing document. If there is no existing document then call saveAs.
+     * If a call to saveAs is made and the user cancels during the file save dialog 
+     * then false will be returned.
+     * 
+     * @return true if the save was not interrupted, false otherwise
+     */
+    public boolean save() {
+        if (fileName.equals(newFileName)) {
+            return saveAs();
+        } else {
+            saveFile();
+            dirty = false;
+            
+            return true;
+        }
+    }
+
+    /**
+     * Display a dialog to the user asking for a location and name of the file
+     * to save. If the user cancels the dialog then return false.
+     * 
+     * @return false if the user cancels the file save dialog, true otherwise
+     */
+    public boolean saveAs() {
+        boolean result = true;
+        
+        String filePath = ApplicationPreferences.getCurrentFilePath();
+        JFileChooser fileChooser = new JFileChooser(filePath);
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            parseFileName(selectedFile.getAbsolutePath().replace("\\", "/"));
+            saveFile();
+            dirty = false;
+        } else {
+            result = false;
+        }
+        
+        return result;
+    }
+    private void saveFile() {
+        final JComponent parentComponent = this;
+        final String path = filePath + FILE_SEPARATOR + fileName;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Writer out = null;
+                
+                try {
+                    out = new OutputStreamWriter(new FileOutputStream(path), StandardCharsets.UTF_8);
+                    out.write(textArea.getText());
+                } catch (FileNotFoundException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    ResourceCleanup.close(out);
+                }
+            }
+        });
+    }
+
+    /**
+     * Check if this tab can be closed. If it is the last tab
+     * a check is made to see if it is a new tab with no changes.
+     * If it is false will be returned.
+     * 
+     * @param isLast true if this is the last open tab
+     * @return True if the user is ok to close the document
+     */
+    public boolean requestClose(boolean isLast) {
+        DirtyStatus status = checkDirty();
+        
+        boolean saveCompleted = true;
+        if (status.equals(DirtyStatus.SAVE_FILE)) {
+            saveCompleted = save();
+        } else if (status.equals(DirtyStatus.CANCEL_ACTION) || (isLast && status.equals(DirtyStatus.DONT_SAVE_FILE) && fileName.equals(newFileName) && !dirty)) {
+            saveCompleted = false;
+        }
+        
+        return saveCompleted;
+    }
+
+    private DirtyStatus checkDirty() {
+        DirtyStatus result = DirtyStatus.DONT_SAVE_FILE;
+        
+        if (dirty) {
+            String filePath = (fileName.equals(newFileName) ? fileName : 
+                ApplicationPreferences.getCurrentFilePath() + FILE_SEPARATOR + fileName);
+            int choice = JOptionPane.showOptionDialog(this, 
+                    "Do you want to save changes to " + filePath + "?", 
+                    "JNotepad", 
+                    JOptionPane.YES_NO_CANCEL_OPTION, 
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    new String[] {"Save", "Don't Save", "Cancel"}, 
+                    "Save");
+            if (choice == JOptionPane.YES_OPTION) {
+                result = DirtyStatus.SAVE_FILE;
+            } else if (choice == JOptionPane.NO_OPTION) {
+                result = DirtyStatus.DONT_SAVE_FILE;
+            } else if (choice == JOptionPane.CANCEL_OPTION) {
+                result = DirtyStatus.CANCEL_ACTION;
+            }
+        }
+        
+        return result;
+    }
+
+    private void parseFileName(String path) {
+        int index = path.lastIndexOf("/");
+        if (index > -1) {
+            filePath = path.substring(0, index);
+            fileName = path.substring(index + 1);
+        } else {
+            filePath = "";
+            fileName = path;
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_DOWN && Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_SCROLL_LOCK)) {
+            JScrollBar bar = textScroll.getVerticalScrollBar();
+            int unitIncrement = textArea.getFontMetrics(textArea.getFont()).getHeight();
+            int maximum = bar.getMaximum();
+            int value = bar.getValue();
+            value += unitIncrement;
+            if (value > maximum) {
+                value = maximum;
+            }
+            bar.setValue(value);
+        } else if (e.getKeyCode() == KeyEvent.VK_UP && Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_SCROLL_LOCK)) {
+            JScrollBar bar = textScroll.getVerticalScrollBar();
+            int unitIncrement = textArea.getFontMetrics(textArea.getFont()).getHeight();
+            int minimum = bar.getMinimum();
+            int value = bar.getValue();
+            value -= unitIncrement;
+            if (value < minimum) {
+                value = minimum;
+            }
+            bar.setValue(value);
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {}
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void changedUpdate(DocumentEvent e) {
@@ -520,5 +670,9 @@ public class TextDocument extends JPanel implements DocumentListener {
             dirty = true;
             jNotepad.setTitle();
         }
+    }
+
+    enum DirtyStatus {
+        SAVE_FILE, DONT_SAVE_FILE, CANCEL_ACTION;
     }
 }
