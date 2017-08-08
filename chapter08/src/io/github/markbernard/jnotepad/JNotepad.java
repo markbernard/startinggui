@@ -425,10 +425,17 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     }
     
     private void loadFile(File selectedFile) {
+        boolean removeInitialNewDoc = false;
+        if (documentTabs.getTabCount() == 1 && currentDocument.getTitle().equals("new 0") & !currentDocument.isDirty()) {
+            removeInitialNewDoc = true;
+        }
         TextDocument doc = new TextDocument(this, selectedFile);
         addDocumentToTabs(doc);
         ApplicationPreferences.addDocument(doc.getFullFilePath());
         updateRecentDocumentsMenu();
+        if (removeInitialNewDoc) {
+            documentTabs.removeTabAt(0);
+        }
     }
     
     /**
