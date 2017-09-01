@@ -494,6 +494,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         if (saved) {
             ApplicationPreferences.addDocument(currentDocument.getFullFilePath());
             updateRecentDocumentsMenu();
+            setTitle();
         }
         
         return saved;

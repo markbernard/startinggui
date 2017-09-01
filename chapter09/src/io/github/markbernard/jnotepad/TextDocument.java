@@ -29,7 +29,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -45,7 +44,6 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,6 +75,7 @@ import javax.swing.undo.UndoManager;
 import org.apache.tika.parser.txt.CharsetDetector;
 import org.apache.tika.parser.txt.CharsetMatch;
 
+import io.github.markbernard.jnotepad.dialog.EncodingDialog;
 import io.github.markbernard.jnotepad.dialog.GoToDialog;
 
 /**
@@ -578,14 +577,20 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
      * @return true if the save was not interrupted, false otherwise
      */
     public boolean save() {
-        if (fileName.equals(newFileName)) {
-            return saveAs();
-        } else {
-            saveFile();
-            dirty = false;
-            
-            return true;
+        boolean result = false;
+        
+        if (checkEncoding()) {
+            if (fileName.equals(newFileName)) {
+                result = saveAs();
+            } else {
+                saveFile();
+                dirty = false;
+                
+                result = true;
+            }
         }
+        
+        return result;
     }
 
     /**
@@ -597,46 +602,58 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     public boolean saveAs() {
         boolean result = true;
         
-        String filePath = ApplicationPreferences.getCurrentFilePath();
-        JFileChooser fileChooser = new JFileChooser(filePath);
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            parseFileName(selectedFile.getAbsolutePath().replace("\\", "/"));
-            saveFile();
-            dirty = false;
-        } else {
-            result = false;
+        if (checkEncoding()) {
+            String filePath = ApplicationPreferences.getCurrentFilePath();
+            JFileChooser fileChooser = new JFileChooser(filePath);
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = fileChooser.getSelectedFile();
+                parseFileName(selectedFile.getAbsolutePath().replace("\\", "/"));
+                saveFile();
+                dirty = false;
+            } else {
+                result = false;
+            }
         }
         
         return result;
     }
-    private void saveFile() {
+    
+    private boolean checkEncoding() {
         boolean encodingOk = encodingAliasMap.containsKey(encoding);
+
         if (!encodingOk) {
-            
+            if (JOptionPane.showConfirmDialog(this, "<html><p>The current encoding (<b>" + encoding + "</b>) is not supported for saving.</p><p>To continue saving you must select a new encoding.</p><p>Click <b>OK</b> to change encodings.</p><p>Click <b>Cancel</b> to not save the current changes.</p><html>", "Invalid Encoding", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION) {
+                EncodingDialog encodingDialog = new EncodingDialog(jNotepad.getParentFrame(), encoding);
+                if (encodingDialog.showDialog()) {
+                    encodingOk = true;
+                    encoding = encodingDialog.getEncoding();
+                }
+            }
         }
         
-        if (encodingOk) {
-            final JComponent parentComponent = this;
-            final String path = filePath + FILE_SEPARATOR + fileName;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    Writer out = null;
-                    
-                    try {
-                        out = new OutputStreamWriter(new FileOutputStream(path), encoding);
-                        out.write(textArea.getText());
-                    } catch (FileNotFoundException e) {
-                        JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
-                    } catch (IOException e) {
-                        JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error saving file", JOptionPane.ERROR_MESSAGE);
-                    } finally {
-                        ResourceCleanup.close(out);
-                    }
+        return encodingOk;
+    }
+
+    private void saveFile() {
+        final JComponent parentComponent = this;
+        final String path = filePath + FILE_SEPARATOR + fileName;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Writer out = null;
+                
+                try {
+                    out = new OutputStreamWriter(new FileOutputStream(path), encoding);
+                    out.write(textArea.getText());
+                } catch (FileNotFoundException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error saving file", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    ResourceCleanup.close(out);
                 }
-            });
-        }
+            }
+        });
     }
 
     /**
