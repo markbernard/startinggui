@@ -472,7 +472,14 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * @return true if the save was not interrupted, false otherwise
      */
     public boolean save() {
-        return currentDocument.save();
+        boolean saved = currentDocument.save();
+
+        if (saved) {
+            ApplicationPreferences.addDocument(currentDocument.getFullFilePath());
+            updateRecentDocumentsMenu();
+        }
+        
+        return saved;
     }
     
     /**
