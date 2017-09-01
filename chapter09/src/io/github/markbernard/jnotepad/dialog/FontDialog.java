@@ -33,8 +33,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -58,7 +56,7 @@ import javax.swing.text.PlainDocument;
  * 
  * @author Mark Bernard
  */
-public class FontDialog extends BasicDialog implements WindowListener {
+public class FontDialog extends BasicDialog {
     private static final long serialVersionUID = -301017949751686897L;
     private static final String[] STYLES = {"Plain", "Bold", "Italic", "Bold Italic"};
     private static final String[] SIZES = {"8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28", "36", "48", "72"};
@@ -89,7 +87,6 @@ public class FontDialog extends BasicDialog implements WindowListener {
     public FontDialog(JFrame owner, Font currentFont) {
         super(owner, "Font", true);
         cancelled = true;
-        addWindowListener(this);
         setResizable(false);
         setLayout(new BorderLayout());
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -456,28 +453,10 @@ public class FontDialog extends BasicDialog implements WindowListener {
     }
     
     @Override
-    public void windowOpened(WindowEvent e) {}
-
-    @Override
-    public void windowClosing(WindowEvent e) {
+    protected void userExit() {
         cancelled = true;
     }
-
-    @Override
-    public void windowClosed(WindowEvent e) {}
-
-    @Override
-    public void windowIconified(WindowEvent e) {}
-
-    @Override
-    public void windowDeiconified(WindowEvent e) {}
-
-    @Override
-    public void windowActivated(WindowEvent e) {}
-
-    @Override
-    public void windowDeactivated(WindowEvent e) {}
-
+    
     /**
      * Display some text in the currently selected font.
      */

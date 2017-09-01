@@ -25,6 +25,8 @@ import io.github.markbernard.jnotepad.action.DialogAction;
 import java.awt.Frame;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
@@ -36,7 +38,7 @@ import javax.swing.KeyStroke;
  * @author Mark Bernard
  *
  */
-public abstract class BasicDialog extends JDialog {
+public abstract class BasicDialog extends JDialog implements WindowListener {
     private static final long serialVersionUID = 5010359693222917600L;
 
     /**
@@ -92,4 +94,34 @@ public abstract class BasicDialog extends JDialog {
         
         return result;
     }
+    
+    @Override
+    public void windowOpened(WindowEvent e) {}
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        userExit();
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {}
+
+    @Override
+    public void windowIconified(WindowEvent e) {}
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {}
+
+    @Override
+    public void windowActivated(WindowEvent e) {}
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
+        dispose();
+    }
+
+    /**
+     * Called when the user clicks the 'X' on the dialog window instead of one of the buttons.
+     */
+    protected abstract void userExit();
 }

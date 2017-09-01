@@ -7,9 +7,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 /**
@@ -19,37 +24,65 @@ import javax.swing.JTextArea;
 public class LineNumberComponent extends JComponent {
     private static final long serialVersionUID = -193612599154053362L;
     private JTextArea document;
-    private JScrollBar scrollbar;
+    private JScrollPane pane;
 
     /**
-     * 
+     * @param document 
+     * @param scrollbar 
+     * @param pane 
      */
-    public LineNumberComponent(JTextArea document, JScrollBar scrollbar) {
+    public LineNumberComponent(JTextArea document, JScrollBar scrollbar, JScrollPane pane) {
         this.document = document;
-        this.scrollbar = scrollbar;
+        this.pane = pane;
         setFont(document.getFont());
+        scrollbar.addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent e) {
+                repaint();
+            }
+        });
     }
 
     public Dimension getPreferredSize() {
-        return new Dimension(30, 30);
+        FontMetrics fm = document.getFontMetrics(document.getFont());
+        int lines = document.getLineCount();
+        if (lines == 0) {
+            lines = 1;
+        }
+        int digits = ((int)Math.log10(lines)) + 1;
+        
+        return new Dimension(digits * fm.stringWidth("W"), 30);
     }
     
     protected void paintComponent(Graphics g) {
-        g.setColor(Color.RED);
+        Color currentColor = g.getColor();
+        g.setColor(Color.LIGHT_GRAY);
         g.fillRect(0, 0, getWidth(), getHeight());
-        g.setColor(Color.WHITE);
-        int viewHeight = getHeight();
-        int position = scrollbar.getValue();
-        FontMetrics fm = document.getFontMetrics(document.getFont());
-        int lineHeight = fm.getHeight();
-        int startLineNumber = position / lineHeight;
-        int topOffset = fm.getAscent() + fm.getLeading();
+        g.setColor(Color.BLACK);
         int colWidth = getWidth();
-        for (int i=0;i<(viewHeight / lineHeight) + 1;i++) {
-            String label = String.valueOf(startLineNumber + i + 1);
-            int yPosition = colWidth - (fm.stringWidth(label));
-            g.drawString(label, yPosition, topOffset + (i * lineHeight));
+        Rectangle viewRect = pane.getViewport().getViewRect();
+        Point currentPoint = viewRect.getLocation();
+        Dimension size = viewRect.getSize();
+        FontMetrics fm = document.getFontMetrics(document.getFont());
+        int topOffset = fm.getAscent() + fm.getLeading();
+        int lineHeight = fm.getHeight();
+        int physicalRasterLine = 0;
+        int lastLineNumber = 0;
+        int yOffset = (currentPoint.y % lineHeight);
+        currentPoint.y += 2;
+        while (physicalRasterLine < size.height) {
+            try {
+                int lineNumber = document.getLineOfOffset(document.viewToModel(currentPoint)) + 1;
+                if (lastLineNumber != lineNumber) {
+                    lastLineNumber = lineNumber;
+                    String label = String.valueOf(lineNumber);
+                    int xPosition = colWidth - (fm.stringWidth(label));
+                    g.drawString(label, xPosition, topOffset + physicalRasterLine - yOffset);
+                }
+            } catch (Exception e) {}
+            physicalRasterLine += lineHeight;
+            currentPoint.y += lineHeight;
         }
-        System.out.println(document.getLocation());
+        g.setColor(currentColor);
     }
 }

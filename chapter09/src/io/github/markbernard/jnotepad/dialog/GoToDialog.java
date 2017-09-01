@@ -25,8 +25,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import io.github.markbernard.jnotepad.JNotepad;
 import io.github.markbernard.jnotepad.NumberDocumentFilter;
@@ -106,13 +104,6 @@ public class GoToDialog extends BasicDialog {
                 setVisible(false);
             }
         });
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowDeactivated(WindowEvent e) {
-                performGoto = false;
-                dispose();
-            }
-        });
     }
     
     /**
@@ -134,5 +125,10 @@ public class GoToDialog extends BasicDialog {
         return Integer.valueOf(lineNumberText.getText().isEmpty() ? 
                 "1" : 
                     lineNumberText.getText());
+    }
+
+    @Override
+    protected void userExit() {
+        performGoto = false;
     }
 }

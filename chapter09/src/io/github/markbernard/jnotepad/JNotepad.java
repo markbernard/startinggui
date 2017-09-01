@@ -64,6 +64,7 @@ import io.github.markbernard.jnotepad.action.FormatAction;
 import io.github.markbernard.jnotepad.action.HelpAction;
 import io.github.markbernard.jnotepad.action.ViewAction;
 import io.github.markbernard.jnotepad.dialog.AboutDialog;
+import io.github.markbernard.jnotepad.dialog.EncodingDialog;
 import io.github.markbernard.jnotepad.dialog.FontDialog;
 import io.github.markbernard.jnotepad.dialog.SearchDialog;
 
@@ -84,10 +85,12 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     private JLabel capsLockLabel;
     private JLabel insertLabel;
     private JLabel readOnlyLabel;
+    private JLabel encodingLabel;
     private UndoManager undoManager;
     private JCheckBoxMenuItem formatWordWrap;
     private JToolBar toolbar;
     private JMenu fileRecentDocumentsMenu;
+    private JNotepad self;
 
     private int newDocumentCounter;
     private PrintRequestAttributeSet printRequestAttributeSet;
@@ -104,6 +107,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * @param parentFrame The main application window.
      */
     public JNotepad(JFrame parentFrame) {
+        self = this;
         this.parentFrame = parentFrame;
         ApplicationPreferences.loadPrefs(parentFrame);
         parentFrame.addWindowListener(this);
@@ -193,6 +197,9 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         formatWordWrap.setSelected(ApplicationPreferences.isWordWrap());
         JMenuItem formatFont = new JMenuItem(new FormatAction.FontAction(this));
         formatMenu.add(formatFont);
+        formatMenu.addSeparator();
+        JMenuItem formatEncoding = new JMenuItem(new FormatAction.EncodingAction(this));
+        formatMenu.add(formatEncoding);
         
         JMenu viewMenu = new JMenu(new ViewAction());
         bar.add(viewMenu);
@@ -253,6 +260,13 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         readOnlyPanel.add(readOnlyLabel, BorderLayout.WEST);
         readOnlyLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
         
+        JPanel encodingPanel = new JPanel(new BorderLayout());
+        statusBarPanel.add(encodingPanel);
+        setStausBorder(encodingPanel);
+        encodingLabel = new JLabel("UTF-8");
+        encodingPanel.add(encodingLabel, BorderLayout.WEST);
+        encodingLabel.setFont(new Font("Consolas", Font.PLAIN, 14));
+
         if (ApplicationPreferences.isStatusBar()) {
             add(statusBarPanel, BorderLayout.SOUTH);
         }
@@ -275,6 +289,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
                 updateCapsLock();
                 updateInsertMode();
                 updateReadOnly();
+                updateEncoding();
             }
         });
     }
@@ -311,6 +326,10 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             readOnlyLabel.setForeground(Color.LIGHT_GRAY);
             readOnlyLabel.setText("Read/Write");
         }
+    }
+    
+    private void updateEncoding() {
+        encodingLabel.setText(currentDocument.getEncoding());
     }
 
     private void createToolbar() {
@@ -603,7 +622,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Display a dialog for the user to search the text for something
      */
     public void find() {
-        JNotepad self = this;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -777,6 +795,25 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
                     }
                 }
                 fontDialog.dispose();
+            }
+        });
+    }
+    
+    /**
+     * Show the user a dialog to select the encoding they want to use.
+     */
+    public void encoding() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                EncodingDialog encodingDialog = new EncodingDialog(parentFrame, currentDocument.getEncoding());
+                if (encodingDialog.showDialog()) {
+                    String encoding = encodingDialog.getEncoding();
+                    if (!encoding.equals(currentDocument.getEncoding())) {
+                        currentDocument.setEncoding(encoding);
+                        updateEncoding();
+                    }
+                }
             }
         });
     }

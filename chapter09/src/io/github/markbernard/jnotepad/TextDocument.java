@@ -28,21 +28,29 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
+import java.io.Reader;
 import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
@@ -66,6 +74,9 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import javax.swing.undo.UndoManager;
 
+import org.apache.tika.parser.txt.CharsetDetector;
+import org.apache.tika.parser.txt.CharsetMatch;
+
 import io.github.markbernard.jnotepad.dialog.GoToDialog;
 
 /**
@@ -75,6 +86,30 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     private static final long serialVersionUID = -6937922244390572212L;
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm aa yyyy-MM-dd");
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    private static Set<String> supportedEncodings = new HashSet<>();
+    private static Map<String ,Set<String>> encodingAliasMap = new HashMap<>();
+    
+    static {
+        supportedEncodings.add(StandardCharsets.ISO_8859_1.name());
+        supportedEncodings.addAll(StandardCharsets.ISO_8859_1.aliases());
+        supportedEncodings.add(StandardCharsets.US_ASCII.name());
+        supportedEncodings.addAll(StandardCharsets.US_ASCII.aliases());
+        supportedEncodings.add(StandardCharsets.UTF_16.name());
+        supportedEncodings.addAll(StandardCharsets.UTF_16.aliases());
+        supportedEncodings.add(StandardCharsets.UTF_16BE.name());
+        supportedEncodings.addAll(StandardCharsets.UTF_16BE.aliases());
+        supportedEncodings.add(StandardCharsets.UTF_16LE.name());
+        supportedEncodings.addAll(StandardCharsets.UTF_16LE.aliases());
+        supportedEncodings.add(StandardCharsets.UTF_8.name());
+        supportedEncodings.addAll(StandardCharsets.UTF_8.aliases());
+
+        encodingAliasMap.put(StandardCharsets.ISO_8859_1.name(), StandardCharsets.ISO_8859_1.aliases());
+        encodingAliasMap.put(StandardCharsets.US_ASCII.name(), StandardCharsets.US_ASCII.aliases());
+        encodingAliasMap.put(StandardCharsets.UTF_16.name(), StandardCharsets.UTF_16.aliases());
+        encodingAliasMap.put(StandardCharsets.UTF_16BE.name(), StandardCharsets.UTF_16BE.aliases());
+        encodingAliasMap.put(StandardCharsets.UTF_16LE.name(), StandardCharsets.UTF_16LE.aliases());
+        encodingAliasMap.put(StandardCharsets.UTF_8.name(), StandardCharsets.UTF_8.aliases());
+    }
     
     private JNotepad jNotepad;
     private JTextArea textArea;
@@ -86,6 +121,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     private boolean dirty;
     private boolean readOnly;
     private UndoManager undoManager;
+    private String encoding;
 
     /**
      * @param jNotepad 
@@ -95,6 +131,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         this.jNotepad = jNotepad;
         newFileName = "new " + documentNumber;
         fileName = newFileName;
+        encoding = "UTF-8";
         createGui();
     }
 
@@ -115,7 +152,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         textArea = new JTextArea();
         textScroll = new JScrollPane(textArea);
         add(textScroll, BorderLayout.CENTER);
-        textScroll.setRowHeaderView(new LineNumberComponent(textArea, textScroll.getVerticalScrollBar()));
+        textScroll.setRowHeaderView(new LineNumberComponent(textArea, textScroll.getVerticalScrollBar(), textScroll));
         textArea.addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
@@ -395,6 +432,20 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     }
 
     /**
+     * @return the encoding
+     */
+    public String getEncoding() {
+        return encoding;
+    }
+
+    /**
+     * @param encoding the encoding to set
+     */
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    /**
      * Operations to update the GUI when a document tab is selected.
      */
     public void shown() {
@@ -445,10 +496,28 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     }
 
     private void loadFile(File path) {
-        InputStreamReader in = null;
+        Reader in = null;
+        InputStream inStream = null;
         
         try {
-            in = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8);
+            inStream = new BufferedInputStream(new FileInputStream(path));
+            CharsetMatch match = new CharsetDetector().setText(inStream).detect();
+            encoding = match.getName();
+            if (encoding.equals("ISO-8859-1")) {
+                encoding = "UTF-8";
+            }
+            if (supportedEncodings.contains(encoding)) {
+                if (!encodingAliasMap.containsKey(encoding)) {
+                    for (String encodingName : encodingAliasMap.keySet()) {
+                        Set<String> alias = encodingAliasMap.get(encodingName);
+                        if (alias.contains(encoding)) {
+                            encoding = encodingName;
+                            break;
+                        }
+                    }
+                }
+            }
+            in = match.getReader();
             StringBuilder content = new StringBuilder();
             char[] buffer = new char[32768];
             int read = -1;
@@ -482,6 +551,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
             JOptionPane.showMessageDialog(this, "Unable to load the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
         } finally {
             ResourceCleanup.close(in);
+            ResourceCleanup.close(inStream);
         }
     }
 
@@ -541,25 +611,32 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         return result;
     }
     private void saveFile() {
-        final JComponent parentComponent = this;
-        final String path = filePath + FILE_SEPARATOR + fileName;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Writer out = null;
-                
-                try {
-                    out = new OutputStreamWriter(new FileOutputStream(path), StandardCharsets.UTF_8);
-                    out.write(textArea.getText());
-                } catch (FileNotFoundException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error loading file", JOptionPane.ERROR_MESSAGE);
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error loading file", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    ResourceCleanup.close(out);
+        boolean encodingOk = encodingAliasMap.containsKey(encoding);
+        if (!encodingOk) {
+            
+        }
+        
+        if (encodingOk) {
+            final JComponent parentComponent = this;
+            final String path = filePath + FILE_SEPARATOR + fileName;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Writer out = null;
+                    
+                    try {
+                        out = new OutputStreamWriter(new FileOutputStream(path), encoding);
+                        out.write(textArea.getText());
+                    } catch (FileNotFoundException e) {
+                        JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
+                    } catch (IOException e) {
+                        JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error saving file", JOptionPane.ERROR_MESSAGE);
+                    } finally {
+                        ResourceCleanup.close(out);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     /**

@@ -53,4 +53,9 @@ public class AboutDialog extends BasicDialog {
         pack();
         centerDialog();
     }
+
+    @Override
+    protected void userExit() {
+        //No effect when user clicks 'X'
+    }
 }

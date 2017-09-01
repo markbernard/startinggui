@@ -20,6 +20,7 @@
 package io.github.markbernard.jnotepad;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Reader;
@@ -60,6 +61,21 @@ public class ResourceCleanup {
     }
 
     /**
+     * Close a inputstream safely.
+     * 
+     * @param in
+     */
+    public static final void close(InputStream in) {
+        if (in != null) {
+            try {
+                in.close();
+            } catch (IOException e) {
+                //cannot do anything
+            }
+        }
+    }
+
+    /**
      * Close a outputstream safely.
      * 
      * @param out
@@ -75,7 +91,7 @@ public class ResourceCleanup {
     }
 
     /**
-     * Close a outputstream safely.
+     * Close a randomaccessfile safely.
      * 
      * @param file
      */

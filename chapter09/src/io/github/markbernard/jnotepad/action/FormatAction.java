@@ -134,6 +134,35 @@ public class FormatAction extends AbstractAction {
                 }
             }, "Font").start();
         }
-        
+    }
+    
+    /**
+     * @author Mark Bernard
+     */
+    public static class EncodingAction extends AbstractAction {
+        private static final long serialVersionUID = -3348895239090369348L;
+        private JNotepad jNotepad;
+
+        /**
+         * Show dialog to switch encodings.
+         * 
+         * @param jNotepad
+         */
+        public EncodingAction(JNotepad jNotepad) {
+            this.jNotepad = jNotepad;
+            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_E);
+            putValue(Action.NAME, "Change Encoding...");
+            putValue(Action.SHORT_DESCRIPTION, "Select a different encoding to save your document under.");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepad.encoding();
+                }
+            }, "Encoding").start();
+        }
     }
 }

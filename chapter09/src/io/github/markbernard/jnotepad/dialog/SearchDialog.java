@@ -29,8 +29,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -158,14 +156,6 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
             }
         });
         
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowDeactivated(WindowEvent e) {
-                dispose();
-            }
-            
-        });
-
         setResizable(false);
         pack();
         findField.requestFocusInWindow();
@@ -238,5 +228,10 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
      */
     public boolean isMatchCase() {
         return matchCase.isSelected();
+    }
+
+    @Override
+    protected void userExit() {
+        //No effect when user clicks 'X'
     }
 }
