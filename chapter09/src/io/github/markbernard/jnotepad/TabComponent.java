@@ -37,6 +37,7 @@ public class TabComponent extends JPanel implements MouseListener {
     private static final long serialVersionUID = 2208710958031050223L;
     private JNotepad jNotepad;
     private JLabel labelName;
+    private SimpleIcon simpleIcon;
 
     /**
      * @param jNotepad 
@@ -45,7 +46,8 @@ public class TabComponent extends JPanel implements MouseListener {
     public TabComponent(JNotepad jNotepad, String componentName) {
         this.jNotepad = jNotepad;
         setLayout(new BorderLayout(5, 0));
-        SimpleIcon simpleIcon = new SimpleIcon(new IconGenerator("/res/icons/DeleteSmall.png").loadImage());
+        simpleIcon = new SimpleIcon(new IconGenerator("/res/icons/TabClose.png").loadImage(), 
+                new IconGenerator("/res/icons/TabCloseHover.png").loadImage(), new IconGenerator("/res/icons/TabClosePressed.png").loadImage());
         add(simpleIcon, BorderLayout.WEST);
         simpleIcon.addMouseListener(this);
         labelName = new JLabel(componentName);
@@ -62,33 +64,73 @@ public class TabComponent extends JPanel implements MouseListener {
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+        simpleIcon.setHover(true);
+        simpleIcon.repaint();
+    }
 
     @Override
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {
+        simpleIcon.setHover(false);
+        simpleIcon.repaint();
+    }
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent e) {
+        simpleIcon.setPressed(true);
+        simpleIcon.repaint();
+    }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+        simpleIcon.setPressed(false);
+        simpleIcon.repaint();
+    }
 
     class SimpleIcon extends JComponent {
         private static final long serialVersionUID = 4289034267693173133L;
 
         private Icon icon;
+        private Icon hoverIcon;
+        private Icon pressedIcon;
         
-        public SimpleIcon(Icon icon) {
+        private boolean hover;
+        private boolean pressed;
+        
+        public SimpleIcon(Icon icon, Icon hoverIcon, Icon pressedIcon) {
             this.icon = icon;
+            this.hoverIcon = hoverIcon;
+            this.pressedIcon = pressedIcon;
             setToolTipText("Click to close");
         }
         
         public void paintComponent(Graphics g) {
-            icon.paintIcon(this, g, 0, 0);
+            if (pressed) {
+                pressedIcon.paintIcon(this, g, 0, 0);
+            } else if (hover) {
+                hoverIcon.paintIcon(this, g, 0, 0);
+            } else {
+                icon.paintIcon(this, g, 0, 0);
+            }
         }
         
         public Dimension getPreferredSize() {
             return new Dimension(icon.getIconWidth(), icon.getIconHeight());
         }
+
+        /**
+         * @param hover the hover to set
+         */
+        public void setHover(boolean hover) {
+            this.hover = hover;
+        }
+
+        /**
+         * @param pressed the pressed to set
+         */
+        public void setPressed(boolean pressed) {
+            this.pressed = pressed;
+        }
+
     }
 }
