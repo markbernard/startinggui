@@ -24,8 +24,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 
 /**
+ * Any time a character is inserted this class will ensure
+ * overwrite mode works correctly.
+ * 
  * @author Mark Bernard
- *
  */
 public class InsertDocumentFilter extends DocumentFilter {
 

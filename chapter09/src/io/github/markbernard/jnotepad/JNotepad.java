@@ -56,7 +56,6 @@ import javax.swing.UIManager;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.undo.UndoManager;
 
 import io.github.markbernard.jnotepad.action.EditAction;
 import io.github.markbernard.jnotepad.action.FileAction;
@@ -86,7 +85,6 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     private JLabel insertLabel;
     private JLabel readOnlyLabel;
     private JLabel encodingLabel;
-    private UndoManager undoManager;
     private JCheckBoxMenuItem formatWordWrap;
     private JToolBar toolbar;
     private JMenu fileRecentDocumentsMenu;
@@ -568,9 +566,12 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Undo the last text input
      */
     public void undo() {
-        if (undoManager.canUndo()) {
-            undoManager.undo();
-        }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                currentDocument.undo();
+            }
+        });
     }
     
     /**

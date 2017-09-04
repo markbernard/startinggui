@@ -619,6 +619,15 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         }
     }
 
+    /**
+     * Undo the last text input
+     */
+    public void undo() {
+        if (undoManager.canUndo()) {
+            undoManager.undo();
+        }
+    }
+    
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DOWN && Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_SCROLL_LOCK)) {
@@ -664,7 +673,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     public void removeUpdate(DocumentEvent e) {
         documentUpdated();
     }
-    
+
     private void documentUpdated() {
         if (!dirty) {
             dirty = true;
