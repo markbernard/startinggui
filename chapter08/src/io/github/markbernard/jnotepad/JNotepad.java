@@ -212,7 +212,10 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         fileRecentDocumentsMenu.removeAll();
         if (recentDocuments.size() > 0) {
             for (int i=0;i<recentDocuments.size();i++) {
-                fileRecentDocumentsMenu.add(new JMenuItem(new FileAction.FileRecentDocumentsAction.FileRecentDocumentsOpenDocumentAction(i, recentDocuments.get(i), this)));
+                fileRecentDocumentsMenu.add(new JMenuItem(
+                        new FileAction.FileRecentDocumentsAction
+                        .FileRecentDocumentsOpenDocumentAction(i, 
+                                recentDocuments.get(i), this)));
             }
         } else {
             JMenuItem fileRecentDocumentsNoneItem = new JMenuItem("<no recent documents>");
@@ -440,19 +443,24 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * @param filePath
      */
     public void openRecentDocument(String filePath) {
-        boolean found = false;
-        for (int i=0;i<documentTabs.getTabCount();i++) {
-            TextDocument doc = (TextDocument)documentTabs.getComponentAt(i);
-            if (filePath.equals(doc.getFullFilePath())) {
-                documentTabs.setSelectedComponent(doc);
-                found = true;
-                break;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                boolean found = false;
+                for (int i=0;i<documentTabs.getTabCount();i++) {
+                    TextDocument doc = (TextDocument)documentTabs.getComponentAt(i);
+                    if (filePath.equals(doc.getFullFilePath())) {
+                        documentTabs.setSelectedComponent(doc);
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    loadFile(new File(filePath));
+                }
             }
-        }
-        
-        if (!found) {
-            loadFile(new File(filePath));
-        }
+        });
     }
 
     private void addDocumentToTabs(TextDocument doc) {

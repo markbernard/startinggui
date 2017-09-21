@@ -317,9 +317,9 @@ public class FileAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_R);
             putValue(Action.NAME, "Recent Documents");
         }
+
         @Override
-        public void actionPerformed(ActionEvent arg0) {
-        }
+        public void actionPerformed(ActionEvent arg0) {}
         
         /**
          * Actions for the File > Recent Documents > selected document menu item.
@@ -339,7 +339,8 @@ public class FileAction extends AbstractAction {
              * @param filePath
              * @param jNotepad
              */
-            public FileRecentDocumentsOpenDocumentAction(int item, String filePath, JNotepad jNotepad) {
+            public FileRecentDocumentsOpenDocumentAction(int item, 
+                    String filePath, JNotepad jNotepad) {
                 this.filePath = filePath;
                 this.jNotepad = jNotepad;
                 putValue(Action.MNEMONIC_KEY, KeyEvent.VK_1 + item);
