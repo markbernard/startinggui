@@ -113,6 +113,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     private JNotepad jNotepad;
     private JTextArea textArea;
     private JScrollPane textScroll;
+    private LineNumberComponent lineNumberComponent;
 
     private String newFileName = "";
     private String fileName;
@@ -151,7 +152,8 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         textArea = new JTextArea();
         textScroll = new JScrollPane(textArea);
         add(textScroll, BorderLayout.CENTER);
-        textScroll.setRowHeaderView(new LineNumberComponent(textArea, textScroll.getVerticalScrollBar(), textScroll));
+        lineNumberComponent = new LineNumberComponent(textArea, textScroll.getVerticalScrollBar(), textScroll);
+        textScroll.setRowHeaderView(lineNumberComponent);
         textArea.addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
@@ -774,6 +776,8 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
             dirty = true;
             jNotepad.setTitle();
         }
+        lineNumberComponent.revalidate();
+        repaint();
     }
 
     enum DirtyStatus {
