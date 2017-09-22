@@ -15,7 +15,6 @@ import java.awt.event.AdjustmentListener;
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 
 /**
@@ -26,14 +25,16 @@ public class LineNumberComponent extends JComponent {
     private static final long serialVersionUID = -193612599154053362L;
     private JTextPane document;
     private JScrollPane pane;
+    private TextDocument textDocument;
 
     /**
-     * @param document 
+     * @param textDocument 
      * @param scrollbar 
      * @param pane 
      */
-    public LineNumberComponent(JTextPane document, JScrollBar scrollbar, JScrollPane pane) {
-        this.document = document;
+    public LineNumberComponent(TextDocument textDocument, JScrollBar scrollbar, JScrollPane pane) {
+        this.textDocument = textDocument;
+        this.document = textDocument.getTextArea();
         this.pane = pane;
         setFont(document.getFont());
         scrollbar.addAdjustmentListener(new AdjustmentListener() {
@@ -46,11 +47,11 @@ public class LineNumberComponent extends JComponent {
 
     public Dimension getPreferredSize() {
         FontMetrics fm = document.getFontMetrics(document.getFont());
-//        int lines = document.getLineCount();
-//        if (lines == 0) {
-//            lines = 1;
-//        }
-        int digits = 3;//((int)Math.log10(lines)) + 1;
+        int lines = document.getText().split("\\r\\n").length;
+        if (lines == 0) {
+            lines = 1;
+        }
+        int digits = ((int)Math.log10(lines)) + 1;
         
         return new Dimension(digits * fm.stringWidth("W"), 30);
     }
@@ -70,10 +71,10 @@ public class LineNumberComponent extends JComponent {
         int physicalRasterLine = 0;
         int lastLineNumber = 0;
         int yOffset = (currentPoint.y % lineHeight);
-        currentPoint.y += 2;
+        currentPoint.y += 3;
         while (physicalRasterLine < size.height) {
             try {
-                int lineNumber = 1;//document.getLineOfOffset(document.viewToModel(currentPoint)) + 1;
+                int lineNumber = textDocument.calculatePosition(document.viewToModel(currentPoint)).x;
                 if (lastLineNumber != lineNumber) {
                     lastLineNumber = lineNumber;
                     String label = String.valueOf(lineNumber);

@@ -74,10 +74,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.Utilities;
 import javax.swing.undo.UndoManager;
 
 import org.apache.tika.parser.txt.CharsetDetector;
@@ -126,7 +124,6 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     private LineNumberComponent lineNumberComponent;
     private AbstractDocument document;
     private int newLineTypeUsed = 0;
-    private int newLineTypeNotUsed = 1;
 
     private String newFileName = "";
     private String fileName;
@@ -173,7 +170,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         };
         textScroll = new JScrollPane(textPane);
         add(textScroll, BorderLayout.CENTER);
-        lineNumberComponent = new LineNumberComponent(textPane, textScroll.getVerticalScrollBar(), textScroll);
+        lineNumberComponent = new LineNumberComponent(this, textScroll.getVerticalScrollBar(), textScroll);
         textScroll.setRowHeaderView(lineNumberComponent);
         textPane.addCaretListener(new CaretListener() {
             @Override
@@ -277,32 +274,37 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
      * @param findDownDirection
      */
     public void findNext(String findTerm, boolean matchCase, boolean findDownDirection) {
-        String localFindTerm = findTerm;
-        if (!matchCase) {
-            localFindTerm = localFindTerm.toLowerCase();
-        }
-        if (findDownDirection) {
-            int findStart = textPane.getSelectionEnd();
-            String text = textPane.getText();
+        try {
+            String localFindTerm = findTerm;
             if (!matchCase) {
-                text = text.toLowerCase();
+                localFindTerm = localFindTerm.toLowerCase();
             }
-            int index = text.indexOf(localFindTerm, findStart);
-            if (index > -1) {
-                textPane.setSelectionStart(index);
-                textPane.setSelectionEnd(index + findTerm.length());
+            if (findDownDirection) {
+                int findStart = textPane.getSelectionEnd();
+                String text = document.getText(0, document.getLength());
+                if (!matchCase) {
+                    text = text.toLowerCase();
+                }
+                int index = text.indexOf(localFindTerm, findStart);
+                if (index > -1) {
+                    textPane.setSelectionStart(index);
+                    textPane.setSelectionEnd(index + findTerm.length());
+                }
+            } else {
+                int findStart = textPane.getSelectionStart();
+                String text = document.getText(0, document.getLength()).substring(0, findStart);
+                if (!matchCase) {
+                    text = text.toLowerCase();
+                }
+                int index = text.lastIndexOf(localFindTerm);
+                if (index > -1) {
+                    textPane.setSelectionStart(index);
+                    textPane.setSelectionEnd(index + findTerm.length());
+                }
             }
-        } else {
-            int findStart = textPane.getSelectionStart();
-            String text = textPane.getText().substring(0, findStart);
-            if (!matchCase) {
-                text = text.toLowerCase();
-            }
-            int index = text.lastIndexOf(localFindTerm);
-            if (index > -1) {
-                textPane.setSelectionStart(index);
-                textPane.setSelectionEnd(index + findTerm.length());
-            }
+        } catch (BadLocationException e) {
+            //should not happen as length is retreived from the document.
+            e.printStackTrace();
         }
     }
 
@@ -347,25 +349,30 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
      * @param parentFrame 
      */
     public void goTo(JFrame parentFrame) {
-        GoToDialog goToDialog = new GoToDialog(parentFrame, jNotepad);
-        if (goToDialog.showDialog()) {
-            int lineNumber = goToDialog.getLineNumber();
-            
-            if (lineNumber == 1) {
-                textPane.setCaretPosition(0);
-            } else if (lineNumber >= 0) {
-                String[] lines = textPane.getText().split("\\n|\\r\\n");
-                int pos = 0;
-                if (lineNumber <= lines.length) {
-                    for (int i=1;i<lineNumber;i++) {
-                        pos += lines[i - 1].length();
-                        pos++;
+        try {
+            GoToDialog goToDialog = new GoToDialog(parentFrame, jNotepad);
+            if (goToDialog.showDialog()) {
+                int lineNumber = goToDialog.getLineNumber();
+                
+                if (lineNumber == 1) {
+                    textPane.setCaretPosition(0);
+                } else if (lineNumber >= 0) {
+                    String[] lines = document.getText(0, document.getLength()).split(REGEX_NEW_LINE_CHAR[newLineTypeUsed]);
+                    int pos = 0;
+                    if (lineNumber <= lines.length) {
+                        for (int i=1;i<lineNumber;i++) {
+                            pos += lines[i - 1].length();
+                            pos++;
+                        }
+                        textPane.setCaretPosition(pos);
                     }
-                    textPane.setCaretPosition(pos);
                 }
             }
+            goToDialog.dispose();
+        } catch (BadLocationException e) {
+            //should not happen as length is retreived from the document.
+            e.printStackTrace();
         }
-        goToDialog.dispose();
     }
 
     /**
@@ -494,20 +501,23 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         }
     }
     
-    private Point calculatePosition(int position) throws BadLocationException {
-        //TODO change
-        String[] lines = textPane.getText().split(REGEX_NEW_LINE_CHAR[newLineTypeUsed]);
-        
+    /**
+     * @param position
+     * @return Point representing the text row and column for the provided position.
+     * @throws BadLocationException
+     */
+    public Point calculatePosition(int position) throws BadLocationException {
+        String[] lines = document.getText(0, document.getLength()).split(REGEX_NEW_LINE_CHAR[newLineTypeUsed]);
         int line = 0;
-        int offset = position;
-        while (offset > 0) {
-            offset = Utilities.getRowStart(textPane, offset - 1);
-            line++;
-        }
-        int rowStart = Utilities.getRowStart(textPane, position);
         int column = 1;
-        if (rowStart > -1) {
-            column = position - rowStart + 1;
+        int pos = 0;
+        while (pos < position && line < lines.length) {
+            int size = lines[line].length() + NEW_LINE_CHAR[newLineTypeUsed].length();
+            if (pos + size > position) {
+                column = (position - pos) + 1;
+            }
+            pos += size;
+            line++;
         }
         if (column == 1) {
             line++;
@@ -592,8 +602,8 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
                 int pos = 0;
                 
                 while ((line = reader.readLine()) != null) {
-                    document.insertString(pos, line + "\n", attributeSet[i]);
-                    pos += (line + "\n").length();
+                    document.insertString(pos, line + NEW_LINE_CHAR[newLineTypeUsed], attributeSet[i]);
+                    pos += (line + NEW_LINE_CHAR[newLineTypeUsed]).length();
                     i++;
                     if (i >= 2) {
                         i = 0;
@@ -721,11 +731,14 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
                 
                 try {
                     out = new OutputStreamWriter(new FileOutputStream(path), encoding);
-                    out.write(textPane.getText());
+                    out.write(document.getText(0, document.getLength()));
                 } catch (FileNotFoundException e) {
                     JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error saving file", JOptionPane.ERROR_MESSAGE);
+                } catch (BadLocationException e) {
+                    //should not happen as length is retreived from the document.
+                    e.printStackTrace();
                 } finally {
                     ResourceCleanup.close(out);
                 }
