@@ -73,6 +73,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
@@ -83,6 +84,7 @@ import org.apache.tika.parser.txt.CharsetMatch;
 
 import io.github.markbernard.jnotepad.dialog.EncodingDialog;
 import io.github.markbernard.jnotepad.dialog.GoToDialog;
+import io.github.markbernard.jnotepad.parser.JavaDocumentParser;
 
 /**
  * @author Mark Bernard
@@ -143,6 +145,9 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         fileName = newFileName;
         encoding = "UTF-8";
         createGui();
+        document = (AbstractDocument)textPane.getDocument();
+        document.addDocumentListener(this);
+        document.setDocumentFilter(new InsertDocumentFilter(this));
     }
 
     /**
@@ -184,9 +189,6 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         undoManager = new UndoManager();
         textPane.getDocument().addUndoableEditListener(undoManager);
         textPane.setFont(ApplicationPreferences.getCurrentFont());
-        document = (AbstractDocument)textPane.getDocument();
-        document.addDocumentListener(this);
-        document.setDocumentFilter(new InsertDocumentFilter(this));
         removeKeyStrokes(textPane);
     }
     
@@ -535,7 +537,6 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     public void processInsert(int position, int length) {
         if (!jNotepad.isInsertMode()) {
             jNotepad.setInsertMode(true);
-            Document document = textPane.getDocument();
             try {
                 int trimLength = length;
                 if (position + trimLength > textPane.getText().length()) {
@@ -581,7 +582,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
                 content.append(line + NEW_LINE_CHAR[newLineTypeUsed]);
             }
             in.close();
-            try {
+//            try {
                 SimpleAttributeSet[] attributeSet = new SimpleAttributeSet[2];
                 attributeSet[0] = new SimpleAttributeSet();
                 attributeSet[1] = new SimpleAttributeSet();
@@ -601,17 +602,23 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
                 line = null;
                 int pos = 0;
                 
-                while ((line = reader.readLine()) != null) {
-                    document.insertString(pos, line + NEW_LINE_CHAR[newLineTypeUsed], attributeSet[i]);
-                    pos += (line + NEW_LINE_CHAR[newLineTypeUsed]).length();
-                    i++;
-                    if (i >= 2) {
-                        i = 0;
-                    }
-                }
-            } catch (BadLocationException e1) {
-                e1.printStackTrace();
-            }
+                document = new DefaultStyledDocument();
+                textPane.setDocument(document);
+                document.addDocumentListener(this);
+                document.setDocumentFilter(new InsertDocumentFilter(this));
+                JavaDocumentParser javaDocumentParser = new JavaDocumentParser();
+                javaDocumentParser.parseStream(document, reader);
+//                while ((line = reader.readLine()) != null) {
+//                    document.insertString(pos, line + NEW_LINE_CHAR[newLineTypeUsed], attributeSet[i]);
+//                    pos += (line + NEW_LINE_CHAR[newLineTypeUsed]).length();
+//                    i++;
+//                    if (i >= 2) {
+//                        i = 0;
+//                    }
+//                }
+//            } catch (BadLocationException e1) {
+//                e1.printStackTrace();
+//            }
             undoManager.discardAllEdits();
             dirty = false;
             readOnly = !path.canWrite();
