@@ -32,6 +32,7 @@ public class JavaDocumentParser implements DocumentParser {
             + "this|break|double|implements|protected|throw|byte|else|import|public|throws|case|enum|instanceof|return|transient|catch|extends|int|"
             + "short|try|char|final|interface|static|void|class|finally|long|strictfp|volatile|const|float|native|super|while)\\W{1}";
     
+    StringBuilder debugBuffer = new StringBuilder();
     static {
         SimpleAttributeSet style = new SimpleAttributeSet();
         StyleConstants.setFontFamily(style, "Courier New");
@@ -77,9 +78,11 @@ public class JavaDocumentParser implements DocumentParser {
         BufferedReader in = new BufferedReader(reader);
         char[] buf = new char[1];
         int read = -1;
+        debugBuffer.setLength(0);
         while ((read = in.read(buf)) > -1) {
             if (read > 0) { 
                 buffer.append(buf[0]);
+                debugBuffer.append(buf[0]);
                 String content = buffer.toString();
                 if (content.matches("\\s")) {
                     try {
@@ -155,11 +158,12 @@ public class JavaDocumentParser implements DocumentParser {
     }
 
     private int parseToString(StringBuilder buffer, Reader in, Document document, int offset, String stringToMatch, AttributeSet style) throws IOException {
-        int counter = 1;
+        int counter = 0;
         
         char[] buf = new char[1];
         while ((in.read(buf)) > 0) {
             buffer.append(buf[0]);
+            debugBuffer.append(buf[0]);
             String content = buffer.toString();
             if (content.endsWith(stringToMatch)) {
                 try {

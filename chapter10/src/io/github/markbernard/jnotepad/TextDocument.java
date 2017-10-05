@@ -20,7 +20,6 @@
 package io.github.markbernard.jnotepad;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -75,8 +74,6 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import javax.swing.undo.UndoManager;
 
 import org.apache.tika.parser.txt.CharsetDetector;
@@ -509,17 +506,20 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
      * @throws BadLocationException
      */
     public Point calculatePosition(int position) throws BadLocationException {
-        String[] lines = document.getText(0, document.getLength()).split(REGEX_NEW_LINE_CHAR[newLineTypeUsed]);
         int line = 0;
         int column = 1;
-        int pos = 0;
-        while (pos < position && line < lines.length) {
-            int size = lines[line].length() + NEW_LINE_CHAR[newLineTypeUsed].length();
-            if (pos + size > position) {
-                column = (position - pos) + 1;
+
+        if (document != null) {
+            String[] lines = document.getText(0, document.getLength()).split(REGEX_NEW_LINE_CHAR[newLineTypeUsed]);
+            int pos = 0;
+            while (pos < position && line < lines.length) {
+                int size = lines[line].length() + NEW_LINE_CHAR[newLineTypeUsed].length();
+                if (pos + size > position) {
+                    column = (position - pos) + 1;
+                }
+                pos += size;
+                line++;
             }
-            pos += size;
-            line++;
         }
         if (column == 1) {
             line++;
@@ -582,43 +582,15 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
                 content.append(line + NEW_LINE_CHAR[newLineTypeUsed]);
             }
             in.close();
-//            try {
-                SimpleAttributeSet[] attributeSet = new SimpleAttributeSet[2];
-                attributeSet[0] = new SimpleAttributeSet();
-                attributeSet[1] = new SimpleAttributeSet();
-                Font currentFont = ApplicationPreferences.getCurrentFont();
-                StyleConstants.setFontFamily(attributeSet[0], currentFont.getFamily());
-                StyleConstants.setFontSize(attributeSet[0], currentFont.getSize());
-                StyleConstants.setBold(attributeSet[0], currentFont.isBold());
-                StyleConstants.setItalic(attributeSet[0], currentFont.isItalic());
-                StyleConstants.setForeground(attributeSet[0], Color.BLACK);
-                StyleConstants.setFontFamily(attributeSet[1], currentFont.getFamily());
-                StyleConstants.setFontSize(attributeSet[1], currentFont.getSize());
-                StyleConstants.setBold(attributeSet[1], currentFont.isBold());
-                StyleConstants.setItalic(attributeSet[1], currentFont.isItalic());
-                StyleConstants.setForeground(attributeSet[1], Color.BLUE);
-                int i = 0;
-                reader = new BufferedReader(new StringReader(content.toString()));
-                line = null;
-                int pos = 0;
-                
-                document = new DefaultStyledDocument();
-                textPane.setDocument(document);
-                document.addDocumentListener(this);
-                document.setDocumentFilter(new InsertDocumentFilter(this));
-                JavaDocumentParser javaDocumentParser = new JavaDocumentParser();
-                javaDocumentParser.parseStream(document, reader);
-//                while ((line = reader.readLine()) != null) {
-//                    document.insertString(pos, line + NEW_LINE_CHAR[newLineTypeUsed], attributeSet[i]);
-//                    pos += (line + NEW_LINE_CHAR[newLineTypeUsed]).length();
-//                    i++;
-//                    if (i >= 2) {
-//                        i = 0;
-//                    }
-//                }
-//            } catch (BadLocationException e1) {
-//                e1.printStackTrace();
-//            }
+            reader = new BufferedReader(new StringReader(content.toString()));
+            line = null;
+            
+            document = new DefaultStyledDocument();
+            textPane.setDocument(document);
+            document.addDocumentListener(this);
+            document.setDocumentFilter(new InsertDocumentFilter(this));
+            JavaDocumentParser javaDocumentParser = new JavaDocumentParser();
+            javaDocumentParser.parseStream(document, reader);
             undoManager.discardAllEdits();
             dirty = false;
             readOnly = !path.canWrite();
