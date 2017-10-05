@@ -44,7 +44,7 @@ public class JavaDocumentParser implements DocumentParser {
         style = new SimpleAttributeSet();
         StyleConstants.setFontFamily(style, "Courier New");
         StyleConstants.setFontSize(style, 14);
-        StyleConstants.setBold(style, false);
+        StyleConstants.setBold(style, true);
         StyleConstants.setItalic(style, false);
         StyleConstants.setForeground(style, new Color(127, 0, 85));
         STYLE_MAP.put(KEYWORD_STYLE, style);
@@ -58,14 +58,14 @@ public class JavaDocumentParser implements DocumentParser {
         style = new SimpleAttributeSet();
         StyleConstants.setFontFamily(style, "Courier New");
         StyleConstants.setFontSize(style, 14);
-        StyleConstants.setBold(style, false);
+        StyleConstants.setBold(style, true);
         StyleConstants.setItalic(style, false);
         StyleConstants.setForeground(style, new Color(42, 0, 255));
         STYLE_MAP.put(STRING_STYLE, style);
         style = new SimpleAttributeSet();
         StyleConstants.setFontFamily(style, "Courier New");
         StyleConstants.setFontSize(style, 14);
-        StyleConstants.setBold(style, false);
+        StyleConstants.setBold(style, true);
         StyleConstants.setItalic(style, false);
         StyleConstants.setForeground(style, new Color(255, 0, 0));
         STYLE_MAP.put(NUMBER_STYLE, style);
