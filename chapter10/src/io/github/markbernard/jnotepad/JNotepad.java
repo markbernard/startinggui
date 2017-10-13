@@ -808,8 +808,9 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
                     ApplicationPreferences.setCurrentFont(selectedFont);
                     for (int i=0;i<documentTabs.getTabCount();i++) {
                         TextDocument doc = (TextDocument)documentTabs.getComponentAt(i);
-                        doc.setSelectedFont(selectedFont);
+                        doc.setUpdateFont(true);
                     }
+                    currentDocument.performUpdateFont();
                 }
                 fontDialog.dispose();
             }

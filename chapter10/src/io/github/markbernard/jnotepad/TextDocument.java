@@ -20,12 +20,15 @@
 package io.github.markbernard.jnotepad;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -48,6 +51,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -70,10 +74,11 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
 import javax.swing.undo.UndoManager;
 
 import org.apache.tika.parser.txt.CharsetDetector;
@@ -86,7 +91,7 @@ import io.github.markbernard.jnotepad.parser.JavaDocumentParser;
 /**
  * @author Mark Bernard
  */
-public class TextDocument extends JPanel implements DocumentListener, KeyListener {
+public class TextDocument extends JPanel implements DocumentListener, KeyListener, ComponentListener {
     private static final long serialVersionUID = -6937922244390572212L;
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm aa yyyy-MM-dd");
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
@@ -121,7 +126,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     private JTextPane textPane;
     private JScrollPane textScroll;
     private LineNumberComponent lineNumberComponent;
-    private AbstractDocument document;
+    private DefaultStyledDocument document;
     private int newLineTypeUsed = 0;
 
     private String newFileName = "";
@@ -131,6 +136,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     private boolean readOnly;
     private UndoManager undoManager;
     private String encoding;
+    private boolean updateFont;
 
     /**
      * @param jNotepad 
@@ -142,9 +148,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         fileName = newFileName;
         encoding = "UTF-8";
         createGui();
-        document = (AbstractDocument)textPane.getDocument();
-        document.addDocumentListener(this);
-        document.setDocumentFilter(new InsertDocumentFilter(this));
+        textPane.setFont(ApplicationPreferences.getCurrentFont());
     }
 
     /**
@@ -160,6 +164,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     
     private void createGui() {
         dirty = false;
+        updateFont = false;
         setLayout(new BorderLayout());
         textPane = new JTextPane() {
             private static final long serialVersionUID = 5313646324700091181L;
@@ -181,11 +186,14 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
             }
         });
         updateStatusBar(textPane.getCaretPosition());
+        document = new DefaultStyledDocument();
+        document.addDocumentListener(this);
+        document.setDocumentFilter(new InsertDocumentFilter(this));
+        document.addUndoableEditListener(undoManager);
+        textPane.setDocument(document);
         textPane.addKeyListener(jNotepad);
         textPane.addKeyListener(this);
         undoManager = new UndoManager();
-        textPane.getDocument().addUndoableEditListener(undoManager);
-        textPane.setFont(ApplicationPreferences.getCurrentFont());
         removeKeyStrokes(textPane);
     }
     
@@ -406,13 +414,6 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     }
 
     /**
-     * @param selectedFont
-     */
-    public void setSelectedFont(Font selectedFont) {
-        textPane.setFont(selectedFont);
-    }
-
-    /**
      * @return the fileName
      */
     public String getFileName() {
@@ -582,15 +583,26 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
                 content.append(line + NEW_LINE_CHAR[newLineTypeUsed]);
             }
             in.close();
-            reader = new BufferedReader(new StringReader(content.toString()));
-            line = null;
             
-            document = new DefaultStyledDocument();
-            textPane.setDocument(document);
-            document.addDocumentListener(this);
-            document.setDocumentFilter(new InsertDocumentFilter(this));
-            JavaDocumentParser javaDocumentParser = new JavaDocumentParser();
-            javaDocumentParser.parseStream(document, reader);
+            if (path.getAbsolutePath().toLowerCase().endsWith(".java")) {
+                reader = new BufferedReader(new StringReader(content.toString()));
+                JavaDocumentParser javaDocumentParser = new JavaDocumentParser();
+                javaDocumentParser.parseStream(document, reader);
+            } else {
+                Font currentFont = ApplicationPreferences.getCurrentFont();
+                Style style = document.addStyle("plain text", null);
+                StyleConstants.setFontFamily(style, currentFont.getFamily());
+                StyleConstants.setFontSize(style, currentFont.getSize());
+                StyleConstants.setBold(style, currentFont.isBold());
+                StyleConstants.setItalic(style, currentFont.isItalic());
+                StyleConstants.setForeground(style, Color.BLACK);
+                try {
+                    document.insertString(0, content.toString(), style);
+                } catch (BadLocationException e) {
+                    //should not occur as position 0 always exists.
+                    e.printStackTrace();
+                }
+            }
             undoManager.discardAllEdits();
             dirty = false;
             readOnly = !path.canWrite();
@@ -838,6 +850,20 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         documentUpdated();
     }
     
+    @Override
+    public void componentHidden(ComponentEvent e) {}
+
+    @Override
+    public void componentMoved(ComponentEvent e) {}
+
+    @Override
+    public void componentResized(ComponentEvent e) {}
+
+    @Override
+    public void componentShown(ComponentEvent e) {
+        performUpdateFont();
+    }
+
     private void documentUpdated() {
         if (!dirty) {
             dirty = true;
@@ -845,6 +871,32 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         }
         lineNumberComponent.revalidate();
         repaint();
+    }
+
+    /**
+     * @param updateFont the updateFont to set
+     */
+    public void setUpdateFont(boolean updateFont) {
+        this.updateFont = updateFont;
+    }
+
+    /**
+     * Update all attributes to the new font.
+     * 
+     * TODO not working
+     */
+    public void performUpdateFont() {
+        if (updateFont) {
+            updateFont = false;
+            Font currentFont = ApplicationPreferences.getCurrentFont();
+            @SuppressWarnings("unchecked")
+            Enumeration<String> styleNames = (Enumeration<String>)document.getStyleNames();
+            while (styleNames.hasMoreElements()) {
+                Style style = document.getStyle(styleNames.nextElement());
+                StyleConstants.setFontFamily(style, currentFont.getFamily());
+                StyleConstants.setFontSize(style, currentFont.getSize());
+            }
+        }
     }
 
     enum DirtyStatus {
