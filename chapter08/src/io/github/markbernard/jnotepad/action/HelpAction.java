@@ -61,8 +61,8 @@ public class HelpAction extends AbstractAction {
             putValue(NAME, "View Help");
             putValue(MNEMONIC_KEY, KeyEvent.VK_H);
             putValue(Action.SHORT_DESCRIPTION, "Open help pages.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/HelpSmall.png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/Help.png").loadImage());
+            putValue(Action.SMALL_ICON, IconGenerator.loadIcon("/res/icons/HelpSmall.png"));
+            putValue(Action.LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/Help.png"));
         }
 
         @Override
@@ -92,9 +92,9 @@ public class HelpAction extends AbstractAction {
             putValue(NAME, "About");
             putValue(MNEMONIC_KEY, KeyEvent.VK_A);
             putValue(Action.SMALL_ICON, 
-                    new IconGenerator("/res/icons/AboutSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/AboutSmall.png"));
             putValue(Action.LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/About.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/About.png"));
         }
 
         @Override

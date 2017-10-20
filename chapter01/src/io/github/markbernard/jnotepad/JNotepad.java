@@ -22,9 +22,14 @@ package io.github.markbernard.jnotepad;
 import io.github.markbernard.jnotepad.ApplicationPreferences;
 
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -46,6 +51,15 @@ public class JNotepad implements WindowListener {
         this.parentFrame = parentFrame;
         ApplicationPreferences.loadPrefs(parentFrame);
         parentFrame.addWindowListener(this);
+        try {
+            List<Image> icons = new ArrayList<>();
+            icons.add(ImageIO.read(getClass().getResourceAsStream("/res/icons/JNotepadIconSmall.png")));
+            icons.add(ImageIO.read(getClass().getResourceAsStream("/res/icons/JNotepadIcon.png")));
+            parentFrame.setIconImages(icons);
+        } catch (IOException e) {
+            //as long as the image is part of the project this exception should not occur
+            e.printStackTrace();
+        }
     }
 
     @Override

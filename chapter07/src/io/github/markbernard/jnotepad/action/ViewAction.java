@@ -75,11 +75,11 @@ public class ViewAction extends AbstractAction {
             putValue(NAME, "Status Bar");
             putValue(MNEMONIC_KEY, KeyEvent.VK_S);
             putValue(Action.SMALL_ICON, 
-                    new IconGenerator("/res/icons/StatusBarSmall" +
-                    (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/StatusBarSmall" +
+                    (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
             putValue(Action.LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/StatusBar" +
-                    (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/StatusBar" +
+                    (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
         }
 
         @Override
@@ -89,11 +89,11 @@ public class ViewAction extends AbstractAction {
                 public void run() {
                     ApplicationPreferences.setStatusBar(!ApplicationPreferences.isStatusBar());
                     putValue(Action.SMALL_ICON, 
-                            new IconGenerator("/res/icons/StatusBarSmall" +
-                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
+                            IconGenerator.loadIcon("/res/icons/StatusBarSmall" +
+                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
                     putValue(Action.LARGE_ICON_KEY, 
-                            new IconGenerator("/res/icons/StatusBar" +
-                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png").loadImage());
+                            IconGenerator.loadIcon("/res/icons/StatusBar" +
+                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
                     jNotepad.status();
                 }
             }, "Status Bar").start();

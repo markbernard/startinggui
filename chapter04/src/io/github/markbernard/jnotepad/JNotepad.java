@@ -20,6 +20,7 @@
 package io.github.markbernard.jnotepad;
 
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -42,8 +43,11 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.InputMap;
@@ -118,6 +122,15 @@ public class JNotepad extends JPanel implements WindowListener, DocumentListener
         JScrollPane scroll = new JScrollPane(textArea);
         add(scroll, BorderLayout.CENTER);
         createMenus();
+        try {
+            List<Image> icons = new ArrayList<>();
+            icons.add(ImageIO.read(getClass().getResourceAsStream("/res/icons/JNotepadIconSmall.png")));
+            icons.add(ImageIO.read(getClass().getResourceAsStream("/res/icons/JNotepadIcon.png")));
+            parentFrame.setIconImages(icons);
+        } catch (IOException e) {
+            //as long as the image is part of the project this exception should not occur
+            e.printStackTrace();
+        }
     }
     
     private void createMenus() {

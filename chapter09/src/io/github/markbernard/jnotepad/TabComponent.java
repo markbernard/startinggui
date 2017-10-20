@@ -46,8 +46,8 @@ public class TabComponent extends JPanel implements MouseListener {
     public TabComponent(JNotepad jNotepad, String componentName) {
         this.jNotepad = jNotepad;
         setLayout(new BorderLayout(5, 0));
-        simpleIcon = new SimpleIcon(new IconGenerator("/res/icons/TabClose.png").loadImage(), 
-                new IconGenerator("/res/icons/TabCloseHover.png").loadImage(), new IconGenerator("/res/icons/TabClosePressed.png").loadImage());
+        simpleIcon = new SimpleIcon(IconGenerator.loadIcon("/res/icons/TabClose.png"), 
+                IconGenerator.loadIcon("/res/icons/TabCloseHover.png"), IconGenerator.loadIcon("/res/icons/TabClosePressed.png"));
         add(simpleIcon, BorderLayout.WEST);
         simpleIcon.addMouseListener(this);
         labelName = new JLabel(componentName);

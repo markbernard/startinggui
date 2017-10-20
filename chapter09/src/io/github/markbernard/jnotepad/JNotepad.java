@@ -131,6 +131,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         parentFrame.add(this, BorderLayout.CENTER);
         parentFrame.setVisible(true);
         currentDocument.shown();
+        parentFrame.setIconImages(IconGenerator.loadImages("/res/icons/JNotepadIconSmall.png", "/res/icons/JNotepadIcon.png"));
     }
     
     private void createMenus() {

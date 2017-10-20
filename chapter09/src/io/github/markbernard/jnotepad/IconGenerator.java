@@ -19,8 +19,11 @@
  */
 package io.github.markbernard.jnotepad;
 
+import java.awt.Image;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -31,31 +34,49 @@ import javax.swing.ImageIcon;
  * @author Mark Bernard
  */
 public class IconGenerator {
-    private static final Map<String, Icon> iconCache = new HashMap<String, Icon>();
-    private String path;
-
+    private static final Map<String, Image> iconCache = new HashMap<String, Image>();
+    
     /**
-     * @param path Path to the resource
+     * @param path 
+     * @return The image pointed to by the provided path
      */
-    public IconGenerator(String path) {
-        this.path = path;
+    public static Icon loadIcon(String path) {
+        return new ImageIcon(loadImage(path));
     }
     
     /**
+     * @param path 
      * @return The image pointed to by the provided path
      */
-    public Icon loadImage() {
-        Icon icon = iconCache.get(path);
+    public static Image loadImage(String path) {
+        Image image = iconCache.get(path);
         
-        if (icon == null) {
+        if (image == null) {
             try {
-                icon = new ImageIcon(ImageIO.read(getClass().getResourceAsStream(path)));
-                iconCache.put(path, icon);
+                image = ImageIO.read(IconGenerator.class.getResourceAsStream(path));
+                iconCache.put(path, image);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         
-        return icon;
+        return image;
+    }
+    
+    /**
+     * @param paths 
+     * @return The image pointed to by the provided path
+     */
+    public static List<Image> loadImages(String... paths) {
+        List<Image> result = new ArrayList<>();
+        for (String path : paths) {
+            Image image = loadImage(path);
+            
+            if (image != null) {
+                result.add(image);
+            }
+        }
+        
+        return result;
     }
 }

@@ -72,9 +72,9 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Undo");
             putValue(SMALL_ICON, 
-                    new IconGenerator("/res/icons/UndoSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/UndoSmall.png"));
             putValue(LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/Undo.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/Undo.png"));
         }
 
         @Override
@@ -108,8 +108,8 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Cut");
             putValue(SHORT_DESCRIPTION, "Remove the current selection from the document and put it in the clipboard.");
-            putValue(SMALL_ICON, new IconGenerator("/res/icons/CutSmall.png").loadImage());
-            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Cut.png").loadImage());
+            putValue(SMALL_ICON, IconGenerator.loadIcon("/res/icons/CutSmall.png"));
+            putValue(LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/Cut.png"));
         }
 
         @Override
@@ -143,8 +143,8 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Copy");
             putValue(SHORT_DESCRIPTION, "Copy the current selection from the document and put it in the clipboard.");
-            putValue(SMALL_ICON, new IconGenerator("/res/icons/CopySmall.png").loadImage());
-            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Copy.png").loadImage());
+            putValue(SMALL_ICON, IconGenerator.loadIcon("/res/icons/CopySmall.png"));
+            putValue(LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/Copy.png"));
         }
 
         @Override
@@ -178,8 +178,8 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Paste");
             putValue(SHORT_DESCRIPTION, "Paste the clipboard contents into the current cursor location or selection.");
-            putValue(SMALL_ICON, new IconGenerator("/res/icons/PasteSmall.png").loadImage());
-            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Paste.png").loadImage());
+            putValue(SMALL_ICON, IconGenerator.loadIcon("/res/icons/PasteSmall.png"));
+            putValue(LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/Paste.png"));
         }
 
         @Override
@@ -213,9 +213,9 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
             putValue(NAME, "Delete");
             putValue(SMALL_ICON, 
-                    new IconGenerator("/res/icons/DeleteSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/DeleteSmall.png"));
             putValue(LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/Delete.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/Delete.png"));
         }
 
         @Override
@@ -249,8 +249,8 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Find...");
             putValue(SHORT_DESCRIPTION, "Open the find dialog.");
-            putValue(SMALL_ICON, new IconGenerator("/res/icons/FindSmall.png").loadImage());
-            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/Find.png").loadImage());
+            putValue(SMALL_ICON, IconGenerator.loadIcon("/res/icons/FindSmall.png"));
+            putValue(LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/Find.png"));
         }
 
         @Override
@@ -291,9 +291,9 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
             putValue(NAME, "Find Next");
             putValue(SMALL_ICON, 
-                    new IconGenerator("/res/icons/FindNextSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/FindNextSmall.png"));
             putValue(LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/FindNext.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/FindNext.png"));
         }
 
         @Override
@@ -337,8 +337,8 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_H, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Replace...");
             putValue(SHORT_DESCRIPTION, "Open the replace dialog.");
-            putValue(SMALL_ICON, new IconGenerator("/res/icons/TextReplaceSmall.png").loadImage());
-            putValue(LARGE_ICON_KEY, new IconGenerator("/res/icons/TextReplace.png").loadImage());
+            putValue(SMALL_ICON, IconGenerator.loadIcon("/res/icons/TextReplaceSmall.png"));
+            putValue(LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/TextReplace.png"));
         }
 
         @Override
@@ -372,9 +372,9 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Go To...");
             putValue(SMALL_ICON, 
-                    new IconGenerator("/res/icons/GoToSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/GoToSmall.png"));
             putValue(LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/GoTo.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/GoTo.png"));
         }
 
         @Override
@@ -408,9 +408,9 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK));
             putValue(NAME, "Select All");
             putValue(SMALL_ICON, 
-                    new IconGenerator("/res/icons/SelectAllSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/SelectAllSmall.png"));
             putValue(LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/SelectAll.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/SelectAll.png"));
         }
 
         @Override
@@ -444,9 +444,9 @@ public class EditAction extends AbstractAction {
             putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
             putValue(NAME, "Time/Date");
             putValue(SMALL_ICON, 
-                    new IconGenerator("/res/icons/TimeDateSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/TimeDateSmall.png"));
             putValue(LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/TimeDate.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/TimeDate.png"));
         }
 
         @Override

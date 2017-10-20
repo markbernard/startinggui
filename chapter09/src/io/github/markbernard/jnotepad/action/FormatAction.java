@@ -80,10 +80,10 @@ public class FormatAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_W);
             putValue(Action.NAME, "Word Wrap");
             putValue(Action.SHORT_DESCRIPTION, "Toggle soft word wrap on or off.");
-            putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/WordWrapSmall" +
-                    (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
-            putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/WordWrap" +
-                    (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
+            putValue(Action.SMALL_ICON, IconGenerator.loadIcon("/res/icons/WordWrapSmall" +
+                    (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
+            putValue(Action.LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/WordWrap" +
+                    (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
         }
 
         @Override
@@ -92,10 +92,10 @@ public class FormatAction extends AbstractAction {
                 @Override
                 public void run() {
                     ApplicationPreferences.setWordWrap(!ApplicationPreferences.isWordWrap());
-                    putValue(Action.SMALL_ICON, new IconGenerator("/res/icons/WordWrapSmall" +
-                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
-                    putValue(Action.LARGE_ICON_KEY, new IconGenerator("/res/icons/WordWrap" +
-                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png").loadImage());
+                    putValue(Action.SMALL_ICON, IconGenerator.loadIcon("/res/icons/WordWrapSmall" +
+                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
+                    putValue(Action.LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/WordWrap" +
+                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
                     jNotepad.wordWrap();
                 }
             }, "Word Wrap").start();
@@ -120,9 +120,9 @@ public class FormatAction extends AbstractAction {
             putValue(Action.MNEMONIC_KEY, KeyEvent.VK_F);
             putValue(Action.NAME, "Font...");
             putValue(Action.SMALL_ICON, 
-                    new IconGenerator("/res/icons/FontSmall.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/FontSmall.png"));
             putValue(Action.LARGE_ICON_KEY, 
-                    new IconGenerator("/res/icons/Font.png").loadImage());
+                    IconGenerator.loadIcon("/res/icons/Font.png"));
         }
 
         @Override
