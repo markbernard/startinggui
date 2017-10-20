@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 
 import io.github.markbernard.jnotepadfx.action.FileAction;
@@ -39,6 +40,7 @@ import javafx.print.PrinterJob;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -83,6 +85,9 @@ public class JNotepadFX extends Application {
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.show();
+        List<Image> icons = primaryStage.getIcons();
+        icons.add(new Image(getClass().getResourceAsStream("/res/icons/JNotepadIconSmall.png")));
+        icons.add(new Image(getClass().getResourceAsStream("/res/icons/JNotepadIcon.png")));
         
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!dirty) {
