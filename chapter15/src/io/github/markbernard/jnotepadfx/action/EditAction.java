@@ -4,6 +4,7 @@
 package io.github.markbernard.jnotepadfx.action;
 
 import io.github.markbernard.jnotepadfx.JNotepadFX;
+import io.github.markbernard.jnotepadfx.dialog.SearchDialog;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 
@@ -131,16 +132,24 @@ public class EditAction {
      */
     public static class FindNextAction implements EventHandler<ActionEvent> {
         private JNotepadFX jNotepadFX;
+        private SearchDialog searchDialog;
 
         /**
          * @param jNotepadFX
+         * @param searchDialog 
          */
-        public FindNextAction(JNotepadFX jNotepadFX) {
+        public FindNextAction(JNotepadFX jNotepadFX, SearchDialog searchDialog) {
             this.jNotepadFX = jNotepadFX;
+            this.searchDialog = searchDialog;
         }
 
         @Override
         public void handle(ActionEvent arg0) {
+            if (searchDialog != null) {
+                jNotepadFX.setFindDownDirection(searchDialog.isFindDirectionDown());
+                jNotepadFX.setMatchCase(searchDialog.isMatchCase());
+                jNotepadFX.setFindTerm(searchDialog.getFindTerm());
+            }
             jNotepadFX.findNext();
         }
     }

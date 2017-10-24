@@ -33,11 +33,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import io.github.markbernard.jnotepadfx.action.EditAction;
 import io.github.markbernard.jnotepadfx.action.FileAction;
+import io.github.markbernard.jnotepadfx.dialog.SearchDialog;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
 import javafx.print.PageLayout;
 import javafx.print.PrinterJob;
@@ -46,16 +50,20 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.IndexRange;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -68,13 +76,16 @@ public class JNotepadFX extends Application {
     private static final String APPLICATION_TITLE = "JNotepad";
     private static final String NEW_FILE_NAME = "Untitled";
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm aa yyyy-MM-dd");
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     private Stage primaryStage;
     private TextArea textArea;
     private boolean dirty;
     private String fileName;
     private PageLayout pageLayout;
+    private String findTerm;
+    private String replaceTerm;
+    private boolean findDownDirection;
+    private boolean matchCase;
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -87,7 +98,6 @@ public class JNotepadFX extends Application {
         textArea = new TextArea();
         root.setCenter(textArea);
         textArea.setFont(new Font("Courier New", 16));
-        createMenus(root);
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -95,6 +105,11 @@ public class JNotepadFX extends Application {
         icons.add(new Image(getClass().getResourceAsStream("/res/icons/JNotepadIconSmall.png")));
         icons.add(new Image(getClass().getResourceAsStream("/res/icons/JNotepadIcon.png")));
         
+        createMenus(root);
+        for (KeyCombination k : scene.getAccelerators().keySet()) {
+            System.out.println(k);
+        }
+
         textArea.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!dirty) {
                 dirty = true;
@@ -168,7 +183,7 @@ public class JNotepadFX extends Application {
         editFindItem.setOnAction(new EditAction.FindAction(this));
         MenuItem editFindNextItem = new MenuItem("Find _Next");
         editFindNextItem.setAccelerator(new KeyCodeCombination(KeyCode.F3));
-        editFindNextItem.setOnAction(new EditAction.FindNextAction(this));
+        editFindNextItem.setOnAction(new EditAction.FindNextAction(this, null));
         MenuItem editReplaceItem = new MenuItem("_Replace");
         editReplaceItem.setAccelerator(new KeyCodeCombination(KeyCode.H, KeyCombination.CONTROL_DOWN));
         editReplaceItem.setOnAction(new EditAction.ReplaceAction(this));
@@ -417,52 +432,140 @@ public class JNotepadFX extends Application {
      * Cut the selected text and place it in the system clipboard
      */
     public void cut() {
-        
+        textArea.cut();
     }
     
     /**
      * Copy the selected text and place it in the system clipboard
      */
     public void copy() {
-        
+        textArea.copy();
     }
     /**
      * Take contents of the system clipboard, if it is text, and place it at the cursor.
      */
     public void paste() {
-        
+        textArea.paste();
     }
     /**
      * Delete the selected text.
      */
     public void delete() {
-        
+        textArea.replaceSelection("");
     }
     /**
      * Display a dialog for the user to search the text for something
      */
     public void find() {
-        
+        SearchDialog searchDialog = new SearchDialog(this, false);
+        searchDialog.show();
     }
     /**
      * Find the next term instance
      */
     public void findNext() {
-        
+        if (findTerm != null && !findTerm.isEmpty()) {
+            String localFindTerm = findTerm;
+            if (!matchCase) {
+                localFindTerm = localFindTerm.toLowerCase();
+            }
+            if (findDownDirection) {
+                int findStart = textArea.getAnchor();
+                String selectedText = textArea.getSelectedText();
+                if (!matchCase) {
+                    selectedText = selectedText.toLowerCase();
+                }
+                if (selectedText.equals(localFindTerm)) {
+                    findStart++;
+                }
+                String text = textArea.getText();
+                if (!matchCase) {
+                    text = text.toLowerCase();
+                }
+                int index = text.indexOf(localFindTerm, findStart);
+                if (index > -1) {
+                    textArea.selectRange(index, index + findTerm.length());
+                }
+            } else {
+                int findStart = textArea.getAnchor();
+                String text = textArea.getText().substring(0, findStart);
+                if (!matchCase) {
+                    text = text.toLowerCase();
+                }
+                int index = text.lastIndexOf(localFindTerm);
+                if (index > -1) {
+                    textArea.selectRange(index, index + findTerm.length());
+                }
+            }
+        } else {
+            find();
+        }
     }
 
     /**
      * 
      */
     public void replace() {
-        
+        SearchDialog searchDialog = new SearchDialog(this, true);
+        searchDialog.show();
     }
     
+    /**
+     * 
+     */
+    public void performReplace() {
+        IndexRange selection = textArea.getSelection();
+        if (findTerm != null && replaceTerm != null && !findTerm.isEmpty() && 
+                selection.getStart() != selection.getEnd()) {
+            String selectedText = textArea.getSelectedText();
+            if ((matchCase && findTerm.equals(selectedText)) || 
+                    (!matchCase && findTerm.equalsIgnoreCase(selectedText))) {
+                textArea.replaceSelection(replaceTerm);
+                textArea.positionCaret(selection.getStart() + replaceTerm.length());
+                findNext();
+            }
+        }
+    }
+
     /**
      * Place the cursor on the beginning of the line number select by the user.
      */
     public void goTo() {
-        
+        TextInputDialog textInputDialog = new TextInputDialog();
+        textInputDialog.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
+            boolean containsNonNumeric = false;
+            for (int i=0;i<newValue.length();i++) {
+                if (!Character.isDigit(newValue.charAt(i))) {
+                    containsNonNumeric = true;
+                    break;
+                }
+            }
+            if (containsNonNumeric) {
+                ((StringProperty)observable).setValue(oldValue);
+            }
+        });
+        Text text = new Text("Line Number:");
+        TextFlow flow = new TextFlow(text);
+        textInputDialog.getDialogPane().setHeader(flow);
+        textInputDialog.setTitle("Go To");
+        ((Stage)textInputDialog.getDialogPane().getScene().getWindow()).getIcons().add(new Image(getClass().getResourceAsStream("/res/icons/JNotepadIconSmall.png")));
+        Optional<String> value = textInputDialog.showAndWait();
+        if (value.isPresent()) {
+            int targetLine = Integer.valueOf(value.get());
+            if (targetLine == 1) {
+                textArea.positionCaret(0);
+            } else {
+                Pattern linePattern = Pattern.compile("\\r\\n|\\n");
+                Matcher lineMatcher = linePattern.matcher(textArea.getText());
+                int line = 1;
+                while (lineMatcher.find()) {
+                    line++;
+                    if (line == targetLine) {
+                        textArea.positionCaret(lineMatcher.end());
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -484,6 +587,34 @@ public class JNotepadFX extends Application {
         }
         textArea.replaceSelection(timeDateString);
         textArea.positionCaret(start + timeDateString.length());
+    }
+
+    /**
+     * @param findTerm the findTerm to set
+     */
+    public void setFindTerm(String findTerm) {
+        this.findTerm = findTerm;
+    }
+
+    /**
+     * @param replaceTerm the replaceTerm to set
+     */
+    public void setReplaceTerm(String replaceTerm) {
+        this.replaceTerm = replaceTerm;
+    }
+
+    /**
+     * @param findDownDirection the findDownDirection to set
+     */
+    public void setFindDownDirection(boolean findDownDirection) {
+        this.findDownDirection = findDownDirection;
+    }
+
+    /**
+     * @param matchCase the matchCase to set
+     */
+    public void setMatchCase(boolean matchCase) {
+        this.matchCase = matchCase;
     }
 
     /**

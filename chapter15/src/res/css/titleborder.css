@@ -1,0 +1,28 @@
+/* This CSS was taken from a Stack Overflow answer. Both answers by jewelsea */
+/* https://stackoverflow.com/questions/14860960/groupbox-titledborder-in-javafx-2 */
+/* https://stackoverflow.com/questions/42321541/javafx-drawing-a-swing-like-lowered-etched-border-possible */
+.label {
+    -fx-font-size: 12px;
+    -fx-font-family: "Arial";
+}
+
+.bordered-titled-title {
+    -fx-background-color: #f4f4f4;
+    -fx-translate-y: -12;
+}
+
+.bordered-titled-border {
+    -fx-content-display: top;
+    -fx-border-base: gray;
+    -fx-border-shadow: white;
+    -fx-light-border: derive(-fx-border-base, 25%);
+    -fx-border-color: -fx-light-border -fx-border-base -fx-border-base -fx-light-border;
+    -fx-border-insets: 0 1 1 0;
+    -fx-background-color: -fx-border-shadow, -fx-background;
+    -fx-background-insets: 1 0 0 1, 2;
+    -fx-padding: 2;
+}
+
+.bordered-titled-content {
+    -fx-padding: 26 10 10 10;
+}
