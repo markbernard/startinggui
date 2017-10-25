@@ -241,7 +241,12 @@ public class JNotepadFX extends Application {
             fileName = NEW_FILE_NAME;
             textArea.setText("");
             dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle();
+                }
+            });
         }
     }
     
@@ -286,7 +291,12 @@ public class JNotepadFX extends Application {
         } else {
             saveFile(ApplicationPreferences.getCurrentFilePath() + "/" + fileName);
             dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle();
+                }
+            });
             
             return true;
         }
@@ -331,7 +341,12 @@ public class JNotepadFX extends Application {
                     .replace("\\", "/"));
             saveFile(selectedFile.getAbsolutePath());
             dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle();
+                }
+            });
             result = true;
         }
         
@@ -348,15 +363,20 @@ public class JNotepadFX extends Application {
         
         try {
             in = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8);
-            StringBuilder content = new StringBuilder();
+            final StringBuilder content = new StringBuilder();
             char[] buffer = new char[32768];
             int read = -1;
             while ((read = in.read(buffer)) > -1) {
                 content.append(buffer, 0, read);
             }
-            textArea.setText(content.toString());
-            dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    textArea.setText(content.toString());
+                    dirty = false;
+                    setTitle();
+                }
+            });
         } catch (FileNotFoundException e) {
             Alert alert = new Alert(AlertType.ERROR, "Unable to find the file: " + path + "\n" + e.getMessage(), ButtonType.OK);
             alert.show();
@@ -425,33 +445,58 @@ public class JNotepadFX extends Application {
      * Undo the last text input
      */
     public void undo() {
-        textArea.undo();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.undo();
+            }
+        });
     }    
 
     /**
      * Cut the selected text and place it in the system clipboard
      */
     public void cut() {
-        textArea.cut();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.cut();
+            }
+        });
     }
     
     /**
      * Copy the selected text and place it in the system clipboard
      */
     public void copy() {
-        textArea.copy();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.copy();
+            }
+        });
     }
     /**
      * Take contents of the system clipboard, if it is text, and place it at the cursor.
      */
     public void paste() {
-        textArea.paste();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.paste();
+            }
+        });
     }
     /**
      * Delete the selected text.
      */
     public void delete() {
-        textArea.replaceSelection("");
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.replaceSelection("");
+            }
+        });
     }
     /**
      * Display a dialog for the user to search the text for something
@@ -484,7 +529,12 @@ public class JNotepadFX extends Application {
                 }
                 int index = text.indexOf(localFindTerm, findStart);
                 if (index > -1) {
-                    textArea.selectRange(index, index + findTerm.length());
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            textArea.selectRange(index, index + findTerm.length());
+                        }
+                    });
                 }
             } else {
                 int findStart = textArea.getAnchor();
@@ -494,7 +544,12 @@ public class JNotepadFX extends Application {
                 }
                 int index = text.lastIndexOf(localFindTerm);
                 if (index > -1) {
-                    textArea.selectRange(index, index + findTerm.length());
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            textArea.selectRange(index, index + findTerm.length());
+                        }
+                    });
                 }
             }
         } else {
@@ -510,6 +565,33 @@ public class JNotepadFX extends Application {
         searchDialog.show();
     }
     
+    /**
+     * 
+     */
+    public void replaceAll() {
+        if (findTerm != null && replaceTerm != null && !findTerm.isEmpty()) {
+            textArea.positionCaret(0);
+            findDownDirection = true;
+            findNext();
+            String localFindTerm = findTerm;
+            String selectedText = textArea.getSelectedText();
+            if (!matchCase) {
+                localFindTerm = localFindTerm.toLowerCase();
+                selectedText = selectedText.toLowerCase();
+            }
+            while (findTerm.equals(selectedText)) {
+                IndexRange range = textArea.getSelection();
+                textArea.replaceSelection(replaceTerm);
+                textArea.positionCaret(range.getStart() + replaceTerm.length());
+                findNext();
+                selectedText = textArea.getSelectedText();
+                if (!matchCase) {
+                    selectedText = selectedText.toLowerCase();
+                }
+            }
+        }
+    }
+
     /**
      * 
      */
@@ -561,7 +643,12 @@ public class JNotepadFX extends Application {
                 while (lineMatcher.find()) {
                     line++;
                     if (line == targetLine) {
-                        textArea.positionCaret(lineMatcher.end());
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                textArea.positionCaret(lineMatcher.end());
+                            }
+                        });
                     }
                 }
             }
@@ -585,8 +672,14 @@ public class JNotepadFX extends Application {
         if (anchor < start) {
             start = anchor;
         }
-        textArea.replaceSelection(timeDateString);
-        textArea.positionCaret(start + timeDateString.length());
+        final int startPoint = start;
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                textArea.replaceSelection(timeDateString);
+                textArea.positionCaret(startPoint + timeDateString.length());
+            }
+        });
     }
 
     /**

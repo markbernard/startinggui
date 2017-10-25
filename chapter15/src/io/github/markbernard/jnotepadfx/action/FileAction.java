@@ -42,7 +42,12 @@ public class FileAction {
         }
         @Override
         public void handle(ActionEvent event) {
-            jNotepadFX.newDocument();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.newDocument();
+                }
+            }, "New").start();
         }
     }
 
@@ -61,7 +66,12 @@ public class FileAction {
         }
         @Override
         public void handle(ActionEvent event) {
-            jNotepadFX.load();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.load();
+                }
+            }, "Load").start();
         }
     }
 
@@ -80,7 +90,12 @@ public class FileAction {
         }
         @Override
         public void handle(ActionEvent event) {
-            jNotepadFX.save();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.save();
+                }
+            }, "Save").start();
         }
     }
 
@@ -99,7 +114,12 @@ public class FileAction {
         }
         @Override
         public void handle(ActionEvent event) {
-            jNotepadFX.saveAs();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.saveAs();
+                }
+            }, "Save As").start();
         }
     }
 
@@ -118,7 +138,12 @@ public class FileAction {
         }
         @Override
         public void handle(ActionEvent event) {
-            jNotepadFX.pageSetup();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.pageSetup();
+                }
+            }, "Page Setup").start();
         }
     }
 
@@ -137,7 +162,12 @@ public class FileAction {
         }
         @Override
         public void handle(ActionEvent event) {
-            jNotepadFX.doPrint();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.doPrint();
+                }
+            }, "Print").start();
         }
     }
 
@@ -156,7 +186,12 @@ public class FileAction {
         }
         @Override
         public void handle(ActionEvent event) {
-            jNotepadFX.exit();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.exit();
+                }
+            }, "Exit").start();
         }
     }
 }

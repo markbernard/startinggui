@@ -27,8 +27,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.undo();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.undo();
+                }
+            }, "Undo").start();
         }
     }
 
@@ -46,8 +51,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.cut();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.cut();
+                }
+            }, "Cut").start();
         }
     }
 
@@ -65,8 +75,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.copy();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.copy();
+                }
+            }, "Copy").start();
         }
     }
 
@@ -84,8 +99,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.paste();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.paste();
+                }
+            }, "Paste").start();
         }
     }
 
@@ -103,8 +123,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.delete();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.delete();
+                }
+            }, "Delete").start();
         }
     }
 
@@ -122,8 +147,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.find();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.find();
+                }
+            }, "Find").start();
         }
     }
 
@@ -144,13 +174,18 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            if (searchDialog != null) {
-                jNotepadFX.setFindDownDirection(searchDialog.isFindDirectionDown());
-                jNotepadFX.setMatchCase(searchDialog.isMatchCase());
-                jNotepadFX.setFindTerm(searchDialog.getFindTerm());
-            }
-            jNotepadFX.findNext();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (searchDialog != null) {
+                        jNotepadFX.setFindDownDirection(searchDialog.isFindDirectionDown());
+                        jNotepadFX.setMatchCase(searchDialog.isMatchCase());
+                        jNotepadFX.setFindTerm(searchDialog.getFindTerm());
+                    }
+                    jNotepadFX.findNext();
+                }
+            }, "Find Next").start();
         }
     }
 
@@ -168,8 +203,46 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.replace();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.replace();
+                }
+            }, "Replace").start();
+        }
+    }
+
+    /**
+     * @author Mark Bernard
+     */
+    public static class ReplaceAllAction implements EventHandler<ActionEvent> {
+        private JNotepadFX jNotepadFX;
+        private SearchDialog searchDialog;
+
+        /**
+         * @param jNotepadFX
+         * @param searchDialog 
+         */
+        public ReplaceAllAction(JNotepadFX jNotepadFX, SearchDialog searchDialog) {
+            this.jNotepadFX = jNotepadFX;
+            this.searchDialog = searchDialog;
+        }
+
+        @Override
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (searchDialog != null) {
+                        jNotepadFX.setFindDownDirection(true);
+                        jNotepadFX.setMatchCase(searchDialog.isMatchCase());
+                        jNotepadFX.setFindTerm(searchDialog.getFindTerm());
+                        jNotepadFX.setReplaceTerm(searchDialog.getReplaceTerm());
+                    }
+                    jNotepadFX.replaceAll();
+                }
+            }, "Replace All").start();
         }
     }
 
@@ -187,8 +260,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.goTo();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.goTo();
+                }
+            }, "Go To").start();
         }
     }
 
@@ -206,8 +284,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.selectAll();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.selectAll();
+                }
+            }, "Select All").start();
         }
     }
 
@@ -225,8 +308,13 @@ public class EditAction {
         }
 
         @Override
-        public void handle(ActionEvent arg0) {
-            jNotepadFX.timeDate();
+        public void handle(ActionEvent event) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    jNotepadFX.timeDate();
+                }
+            }, "Time/Date").start();
         }
     }
 

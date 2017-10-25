@@ -117,7 +117,7 @@ public class SearchDialog extends Dialog<ButtonType> {
             Button replaceAllButton = new Button("Replace _All");
             buttonPane.add(replaceAllButton, 0, 2);
             replaceAllButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-            replaceAllButton.setOnAction(new EditAction.FindNextAction(jNotepadFX, this));
+            replaceAllButton.setOnAction(new EditAction.ReplaceAllAction(jNotepadFX, this));
             buttonPane.add(cancelButton, 0, 3);
 
             replaceField = new TextField();

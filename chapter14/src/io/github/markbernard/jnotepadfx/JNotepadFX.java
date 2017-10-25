@@ -182,7 +182,12 @@ public class JNotepadFX extends Application {
             fileName = NEW_FILE_NAME;
             textArea.setText("");
             dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle();
+                }
+            });
         }
     }
     
@@ -227,7 +232,12 @@ public class JNotepadFX extends Application {
         } else {
             saveFile(ApplicationPreferences.getCurrentFilePath() + "/" + fileName);
             dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle();
+                }
+            });
             
             return true;
         }
@@ -272,7 +282,12 @@ public class JNotepadFX extends Application {
                     .replace("\\", "/"));
             saveFile(selectedFile.getAbsolutePath());
             dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle();
+                }
+            });
             result = true;
         }
         
@@ -289,15 +304,20 @@ public class JNotepadFX extends Application {
         
         try {
             in = new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8);
-            StringBuilder content = new StringBuilder();
+            final StringBuilder content = new StringBuilder();
             char[] buffer = new char[32768];
             int read = -1;
             while ((read = in.read(buffer)) > -1) {
                 content.append(buffer, 0, read);
             }
-            textArea.setText(content.toString());
-            dirty = false;
-            setTitle();
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    textArea.setText(content.toString());
+                    dirty = false;
+                    setTitle();
+                }
+            });
         } catch (FileNotFoundException e) {
             Alert alert = new Alert(AlertType.ERROR, "Unable to find the file: " + path + "\n" + e.getMessage(), ButtonType.OK);
             alert.show();
