@@ -66,6 +66,7 @@ public class SearchDialog extends Dialog<ButtonType> {
         window = scene.getWindow();
         window.setOnCloseRequest(event -> window.hide());
         ((Stage)window).getIcons().add(IconCache.loadImage("/res/icons/JNotepadIconSmall.png"));
+
         BorderPane dialogPane = new BorderPane();
         getDialogPane().setContent(dialogPane);
         BorderPane mainPane = new BorderPane();

@@ -38,6 +38,8 @@ import java.util.regex.Pattern;
 
 import io.github.markbernard.jnotepadfx.action.EditAction;
 import io.github.markbernard.jnotepadfx.action.FileAction;
+import io.github.markbernard.jnotepadfx.action.FormatAction;
+import io.github.markbernard.jnotepadfx.dialog.FontDialog;
 import io.github.markbernard.jnotepadfx.dialog.SearchDialog;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -50,6 +52,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.IndexRange;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -61,7 +64,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
@@ -97,7 +99,7 @@ public class JNotepadFX extends Application {
         BorderPane root = new BorderPane();
         textArea = new TextArea();
         root.setCenter(textArea);
-        textArea.setFont(new Font("Courier New", 16));
+        textArea.setFont(ApplicationPreferences.getCurrentFont());
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -199,7 +201,15 @@ public class JNotepadFX extends Application {
         editMenu.getItems().addAll(editUndoItem, new SeparatorMenuItem(), editCutItem, editCopyItem, editPasteItem, editDeleteItem, 
                 new SeparatorMenuItem(), editFindItem, editFindNextItem, editReplaceItem, editGoToItem, new SeparatorMenuItem(), editSelectAllItem, editTimeDateItem);
         
-        bar.getMenus().addAll(fileMenu, editMenu);
+        Menu formatMenu = new Menu("F_ormat");
+        CheckMenuItem formatWordWrapItem = new CheckMenuItem("_Word Wrap");
+        formatWordWrapItem.setSelected(ApplicationPreferences.isWordWrap());
+        formatWordWrapItem.setOnAction(new FormatAction.FormatWordWrapAction(this));
+        MenuItem formatFontItem = new MenuItem("_Font...");
+        formatFontItem.setOnAction(new FormatAction.FormatFontAction(this));
+        formatMenu.getItems().addAll(formatWordWrapItem, formatFontItem);
+        
+        bar.getMenus().addAll(fileMenu, editMenu, formatMenu);
     }
 
     private boolean doExit() {
@@ -264,17 +274,22 @@ public class JNotepadFX extends Application {
         }
         
         if (saveSuccessful) {
-            String filePath = ApplicationPreferences.getCurrentFilePath();
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setInitialDirectory(new File(filePath));
-            File selectedFile = fileChooser.showOpenDialog(primaryStage);
-            if (selectedFile != null) {
-                fileName = selectedFile.getName();
-                ApplicationPreferences.setCurrentFilePath(
-                        selectedFile.getParentFile().getAbsolutePath()
-                        .replace("\\", "/"));
-                loadFile(selectedFile);
-            }
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    String filePath = ApplicationPreferences.getCurrentFilePath();
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setInitialDirectory(new File(filePath));
+                    File selectedFile = fileChooser.showOpenDialog(primaryStage);
+                    if (selectedFile != null) {
+                        fileName = selectedFile.getName();
+                        ApplicationPreferences.setCurrentFilePath(
+                                selectedFile.getParentFile().getAbsolutePath()
+                                .replace("\\", "/"));
+                        loadFile(selectedFile);
+                    }
+                }
+            });
         }
     }
 
@@ -502,8 +517,14 @@ public class JNotepadFX extends Application {
      * Display a dialog for the user to search the text for something
      */
     public void find() {
-        SearchDialog searchDialog = new SearchDialog(this, false);
-        searchDialog.show();
+        JNotepadFX self = this;
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                SearchDialog searchDialog = new SearchDialog(self, false);
+                searchDialog.show();
+            }
+        });
     }
     /**
      * Find the next term instance
@@ -678,6 +699,29 @@ public class JNotepadFX extends Application {
             public void run() {
                 textArea.replaceSelection(timeDateString);
                 textArea.positionCaret(startPoint + timeDateString.length());
+            }
+        });
+    }
+
+    /**
+     * Toggle word wrapping
+     */
+    public void wordWrap() {
+        ApplicationPreferences.setWordWrap(!ApplicationPreferences.isWordWrap());
+        textArea.setWrapText(ApplicationPreferences.isWordWrap());
+    }    
+
+    /**
+     * Set the font to be used for editing and printing.
+     */
+    public void font() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                FontDialog fontDialog = new FontDialog();
+                Optional<ButtonType> result = fontDialog.showAndWait();
+                if (result.isPresent() && result.get().equals(ButtonType.OK)) {
+                }
             }
         });
     }
