@@ -721,6 +721,9 @@ public class JNotepadFX extends Application {
                 FontDialog fontDialog = new FontDialog();
                 Optional<ButtonType> result = fontDialog.showAndWait();
                 if (result.isPresent() && result.get().equals(ButtonType.OK)) {
+                    ApplicationPreferences.setCurrentFont(fontDialog.getFontFamily(), fontDialog.isBold(), fontDialog.isItalic(), fontDialog.getSize());
+                    textArea.setFont(ApplicationPreferences.getCurrentFont());
+                    System.out.println(ApplicationPreferences.getCurrentFont());
                 }
             }
         });

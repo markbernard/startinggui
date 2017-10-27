@@ -30,8 +30,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -94,12 +92,7 @@ public class SearchDialog extends Dialog<ButtonType> {
         Button cancelButton = new Button("Cancel");
         cancelButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         cancelButton.setCancelButton(true);
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                window.hide();
-            }
-        });
+        cancelButton.setOnAction(event -> window.hide());
         GridPane.setFillWidth(findNextButton, true);
         GridPane.setFillWidth(cancelButton, true);
         

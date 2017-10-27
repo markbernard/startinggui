@@ -21,23 +21,23 @@ package io.github.markbernard.jnotepadfx.dialog;
 
 import io.github.markbernard.jnotepadfx.ApplicationPreferences;
 import io.github.markbernard.jnotepadfx.IconCache;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
-import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -63,9 +63,14 @@ public class FontDialog extends Dialog<ButtonType> {
     private ListView<String> familyList;
     private ListView<String> styleList;
     private ListView<String> sizeList;
+    private Text fontSampleLabel;
     
     private ChangeListener<String> familyListChangeListener;
+    private ChangeListener<String> styleListChangeListener;
+    private ChangeListener<String> sizeListChangeListener;
     private ChangeListener<String> familyTextChangeListener;
+    private ChangeListener<String> styleTextChangeListener;
+    private ChangeListener<String> sizeTextChangeListener;
     
     /**
      * 
@@ -102,6 +107,8 @@ public class FontDialog extends Dialog<ButtonType> {
         familyPane.setRight(familyList);
         familyList.getItems().addAll(Font.getFamilies());
         familyList.setMaxSize(200, 144);
+        familyList.getSelectionModel().select(fontFamily);
+        familyList.scrollTo(fontFamily);
 
         BorderPane stylePane = new BorderPane();
         middlePane.setRight(stylePane);
@@ -114,6 +121,8 @@ public class FontDialog extends Dialog<ButtonType> {
         stylePane.setRight(styleList);
         styleList.getItems().addAll(STYLES);
         styleList.setMaxSize(80, 144);
+        styleList.getSelectionModel().select(style);
+        styleList.scrollTo(style);
         
         BorderPane sizePane = new BorderPane();
         fontChoicePane.setRight(sizePane);
@@ -125,6 +134,8 @@ public class FontDialog extends Dialog<ButtonType> {
         sizePane.setRight(sizeList);
         sizeList.getItems().addAll(SIZES);
         sizeList.setMaxSize(50, 144);
+        sizeList.getSelectionModel().select((String.valueOf((int)size)));
+        sizeList.scrollTo((String.valueOf((int)size)));
 
         BorderPane bottomPane = new BorderPane();
         mainPane.setBottom(bottomPane);
@@ -153,47 +164,134 @@ public class FontDialog extends Dialog<ButtonType> {
             }
         });
         
-        Text fontSampleLabel = new Text("AaBbYyZz");
+        fontSampleLabel = new Text("AaBbYyZz");
         fontSampleLabel.setFont(selectedFont);
         BorderedTitledPane fontSampleTitlePane = new BorderedTitledPane("Sample", fontSampleLabel);
         mainPane.setCenter(fontSampleTitlePane);
         fontSampleTitlePane.setMargin(new Insets(15, 0, 15, 0));
         BorderPane.setMargin(fontSampleTitlePane, new Insets(10, 30, 5, 30));
+        fontSampleTitlePane.setMaxHeight(56);
     
-        createEvents();
         addListEvents();
         addTextEvents();
     }
 
-    private void createEvents() {
+    private void addListEvents() {
         familyListChangeListener = (observable, oldValue, newValue) -> {
-            familyField.setText(newValue);
-        };
-        
-        familyTextChangeListener = (observable, oldValue, newValue) -> {
             familyField.textProperty().removeListener(familyTextChangeListener);
-            String name = familyField.getText();
-            ObservableList<String> items = familyList.getItems();
+            familyField.setText(newValue);
+            familyField.textProperty().addListener(familyTextChangeListener);
+            updateFont();
+        };
+        styleListChangeListener = (observable, oldValue, newValue) -> {
+            styleField.textProperty().removeListener(styleTextChangeListener);
+            styleField.setText(newValue);
+            styleField.textProperty().addListener(styleTextChangeListener);
+            updateFont();
+        };
+        sizeListChangeListener = (observable, oldValue, newValue) -> {
+            sizeField.textProperty().removeListener(sizeTextChangeListener);
+            sizeField.setText(newValue);
+            sizeField.textProperty().addListener(sizeTextChangeListener);
+            updateFont();
+        };
+
+        familyList.getSelectionModel().selectedItemProperty().addListener(familyListChangeListener);
+        styleList.getSelectionModel().selectedItemProperty().addListener(styleListChangeListener);
+        sizeList.getSelectionModel().selectedItemProperty().addListener(sizeListChangeListener);
+    }
+    
+    private void addTextEvents() {
+        familyTextChangeListener = (observable, oldValue, newValue) -> {
             familyList.getSelectionModel().selectedItemProperty().removeListener(familyListChangeListener);
+            ObservableList<String> items = familyList.getItems();
             for (String item : items) {
-                if (item.equalsIgnoreCase(name) || item.toLowerCase().startsWith(name.toLowerCase())) {
+                if (item.equalsIgnoreCase(newValue) || item.toLowerCase().startsWith(newValue.toLowerCase())) {
+                    familyList.getSelectionModel().select(item);
+                    familyList.scrollTo(item);
                     familyField.setText(item);
-                    familyField.positionCaret(name.length());
-                    familyField.selectEnd();
+                    Platform.runLater(() -> {
+                        familyField.positionCaret(newValue.length());
+                        familyField.selectEnd();
+                    });
                     break;
                 }
             }
             familyList.getSelectionModel().selectedItemProperty().addListener(familyListChangeListener);
-            familyField.textProperty().addListener(familyTextChangeListener);
+            updateFont();
         };
-    }
+        styleTextChangeListener = (observable, oldValue, newValue) -> {
+            styleList.getSelectionModel().selectedItemProperty().removeListener(styleListChangeListener);
+            ObservableList<String> items = styleList.getItems();
+            for (String item : items) {
+                if (item.equalsIgnoreCase(newValue) || item.toLowerCase().startsWith(newValue.toLowerCase())) {
+                    styleList.getSelectionModel().select(item);
+                    styleList.scrollTo(item);
+                    styleField.setText(item);
+                    Platform.runLater(() -> {
+                        styleField.positionCaret(newValue.length());
+                        styleField.selectEnd();
+                    });
+                    break;
+                }
+            }
+            styleList.getSelectionModel().selectedItemProperty().addListener(styleListChangeListener);
+            updateFont();
+        };
+        sizeTextChangeListener = (observable, oldValue, newValue) -> {
+            sizeList.getSelectionModel().selectedItemProperty().removeListener(sizeListChangeListener);
+            ObservableList<String> items = sizeList.getItems();
+            for (String item : items) {
+                if (item.equalsIgnoreCase(newValue) || item.toLowerCase().startsWith(newValue.toLowerCase())) {
+                    sizeList.getSelectionModel().select(item);
+                    sizeList.scrollTo(item);
+                    sizeField.setText(item);
+                    Platform.runLater(() -> {
+                        sizeField.positionCaret(newValue.length());
+                        sizeField.selectEnd();
+                    });
+                    break;
+                }
+            }
+            sizeList.getSelectionModel().selectedItemProperty().addListener(sizeListChangeListener);
+            updateFont();
+        };
 
-    private void addListEvents() {
-        familyList.getSelectionModel().selectedItemProperty().addListener(familyListChangeListener);
+        familyField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.booleanValue()) {
+                Platform.runLater(() -> {
+                    familyField.selectAll();
+                });
+            }
+        });
+        styleField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.booleanValue()) {
+                Platform.runLater(() -> {
+                    styleField.selectAll();
+                });
+            }
+        });
+        sizeField.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue.booleanValue()) {
+                Platform.runLater(() -> {
+                    sizeField.selectAll();
+                });
+            }
+        });
+
+        familyField.textProperty().addListener(familyTextChangeListener);
+        styleField.textProperty().addListener(styleTextChangeListener);
+        sizeField.textProperty().addListener(sizeTextChangeListener);
     }
     
-    private void addTextEvents() {
-        familyField.textProperty().addListener(familyTextChangeListener);
+    private void updateFont() {
+        fontFamily = familyList.getSelectionModel().getSelectedItem();
+        int index = styleList.getSelectionModel().getSelectedIndex();
+        bold = (index & 1) == 1;
+        italic = (index & 2) == 2;
+        size = Double.parseDouble(sizeField.getText());
+        Font font = Font.font(fontFamily, bold ? FontWeight.BOLD : FontWeight.NORMAL, italic ? FontPosture.ITALIC : FontPosture.REGULAR, size);
+        fontSampleLabel.setFont(font);
     }
 
     /**
