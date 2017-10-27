@@ -74,12 +74,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.undo();
-                }
-            }, "Undo").start();
+            new Thread(() -> jNotepad.undo(), "Undo").start();
         }
     }
 
@@ -106,12 +101,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.cut();
-                }
-            }, "Cut").start();
+            new Thread(() -> jNotepad.cut(), "Cut").start();
         }
     }
 
@@ -138,12 +128,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.copy();
-                }
-            }, "Copy").start();
+            new Thread(() -> jNotepad.copy(), "Copy").start();
         }
     }
 
@@ -170,12 +155,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.paste();
-                }
-            }, "Paste").start();
+            new Thread(() -> jNotepad.paste(), "Paste").start();
         }
     }
 
@@ -202,12 +182,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.delete();
-                }
-            }, "Paste").start();
+            new Thread(() -> jNotepad.delete(), "Paste").start();
         }
     }
 
@@ -234,12 +209,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.find();
-                }
-            }, "Find").start();
+            new Thread(() -> jNotepad.find(), "Find").start();
         }
     }
 
@@ -273,21 +243,13 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (searchDialog != null) {
-                        jNotepad.setFindTerm(searchDialog.getFindTerm());
-                        jNotepad.setFindDownDirection(searchDialog.isFindDirectionDown());
-                        jNotepad.setMatchCase(searchDialog.isMatchCase());
-                    }
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            jNotepad.findNext();
-                        }
-                    });
+            new Thread(() -> {
+                if (searchDialog != null) {
+                    jNotepad.setFindTerm(searchDialog.getFindTerm());
+                    jNotepad.setFindDownDirection(searchDialog.isFindDirectionDown());
+                    jNotepad.setMatchCase(searchDialog.isMatchCase());
                 }
+                SwingUtilities.invokeLater(() -> jNotepad.findNext());
             }, "Find Next (Menu)").start();
         }
     }
@@ -315,12 +277,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.replace();
-                }
-            }, "Replace (menu)").start();
+            new Thread(() -> jNotepad.replace(), "Replace (menu)").start();
         }
     }
 
@@ -347,12 +304,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.goTo();
-                }
-            }, "Go To (menu)").start();
+            new Thread(() -> jNotepad.goTo(), "Go To (menu)").start();
         }
     }
 
@@ -379,12 +331,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.selectAll();
-                }
-            }, "Select All").start();
+            new Thread(() -> jNotepad.selectAll(), "Select All").start();
         }
     }
 
@@ -411,12 +358,7 @@ public class EditAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.timeDate();
-                }
-            }, "Time/Date").start();
+            new Thread(() -> jNotepad.timeDate(), "Time/Date").start();
         }
     }
 }

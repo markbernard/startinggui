@@ -9,8 +9,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollBar;
@@ -37,12 +35,7 @@ public class LineNumberComponent extends JComponent {
         this.document = textDocument.getTextArea();
         this.pane = pane;
         setFont(document.getFont());
-        scrollbar.addAdjustmentListener(new AdjustmentListener() {
-            @Override
-            public void adjustmentValueChanged(AdjustmentEvent e) {
-                repaint();
-            }
-        });
+        scrollbar.addAdjustmentListener((event) -> repaint());
     }
 
     public Dimension getPreferredSize() {

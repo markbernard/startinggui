@@ -66,12 +66,7 @@ public class FormatAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.wordWrap();
-                }
-            }, "Word Wrap").start();
+            new Thread(() -> jNotepad.wordWrap(), "Word Wrap").start();
         }
         
     }
@@ -96,12 +91,7 @@ public class FormatAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.font();
-                }
-            }, "Font").start();
+            new Thread(() -> jNotepad.font(), "Font").start();
         }
         
     }

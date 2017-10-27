@@ -77,14 +77,11 @@ public class DialogAction {
         
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.setFindTerm(searchDialog.getFindTerm());
-                    jNotepad.setReplaceTerm(searchDialog.getReplaceTerm());
-                    jNotepad.setMatchCase(searchDialog.isMatchCase());
-                    jNotepad.performReplace();
-                }
+            new Thread(() -> {
+                jNotepad.setFindTerm(searchDialog.getFindTerm());
+                jNotepad.setReplaceTerm(searchDialog.getReplaceTerm());
+                jNotepad.setMatchCase(searchDialog.isMatchCase());
+                jNotepad.performReplace();
             }, "Replace (dialog)").start();
         }
     }
@@ -111,14 +108,11 @@ public class DialogAction {
         
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.setFindTerm(searchDialog.getFindTerm());
-                    jNotepad.setReplaceTerm(searchDialog.getReplaceTerm());
-                    jNotepad.setMatchCase(searchDialog.isMatchCase());
-                    jNotepad.replaceAll();
-                }
+            new Thread(() -> {
+                jNotepad.setFindTerm(searchDialog.getFindTerm());
+                jNotepad.setReplaceTerm(searchDialog.getReplaceTerm());
+                jNotepad.setMatchCase(searchDialog.isMatchCase());
+                jNotepad.replaceAll();
             }, "Replace All").start();
         }
     }

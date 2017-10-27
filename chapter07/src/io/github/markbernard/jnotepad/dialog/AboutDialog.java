@@ -22,8 +22,6 @@ package io.github.markbernard.jnotepad.dialog;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -58,12 +56,7 @@ public class AboutDialog extends BasicDialog {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
         JButton okButton = new JButton("OK");
         buttonPanel.add(okButton);
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-            }
-        });
+        okButton.addActionListener((event) -> setVisible(false));
 
         addEscapeToActionMap(okButton);
         pack();

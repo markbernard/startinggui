@@ -23,8 +23,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.nio.charset.StandardCharsets;
 
 import javax.swing.BorderFactory;
@@ -100,22 +98,16 @@ public class EncodingDialog extends BasicDialog {
         getRootPane().setDefaultButton(okButton);
         addEscapeToActionMap(okButton);
         okButton.setEnabled(enableOkButton);
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                encodingSelected = true;
-                setVisible(false);
-            }
+        okButton.addActionListener((event) -> {
+            encodingSelected = true;
+            setVisible(false);
         });
         JButton cancelButton = new JButton("Cancel");
         buttonPanel.add(cancelButton);
         addEscapeToActionMap(cancelButton);
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                encodingSelected = false;
-                setVisible(false);
-            }
+        cancelButton.addActionListener((event) -> {
+            encodingSelected = false;
+            setVisible(false);
         });
         
         centerDialog();
@@ -127,12 +119,9 @@ public class EncodingDialog extends BasicDialog {
         encodingButtonGroup.add(radioButton);
         encodingListPanel.add(radioButton);
         addEscapeToActionMap(radioButton);
-        radioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                okButton.setEnabled(true);
-                selectedEncoding = name;
-            }
+        radioButton.addActionListener((event) -> {
+            okButton.setEnabled(true);
+            selectedEncoding = name;
         });
         
         return radioButton;

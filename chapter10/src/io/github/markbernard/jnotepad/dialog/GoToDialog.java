@@ -22,8 +22,6 @@ package io.github.markbernard.jnotepad.dialog;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 import io.github.markbernard.jnotepad.JNotepad;
@@ -89,20 +87,14 @@ public class GoToDialog extends BasicDialog {
         addEscapeToActionMap(cancelButton);
         buttonPanel.add(cancelButton);
         
-        goToButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                performGoto = true;
-                setVisible(false);
-            }
+        goToButton.addActionListener((event) -> {
+            performGoto = true;
+            setVisible(false);
         });
         
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                performGoto = false;
-                setVisible(false);
-            }
+        cancelButton.addActionListener((event) -> {
+            performGoto = false;
+            setVisible(false);
         });
     }
     

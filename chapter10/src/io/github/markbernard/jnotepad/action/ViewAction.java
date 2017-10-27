@@ -84,18 +84,15 @@ public class ViewAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ApplicationPreferences.setStatusBar(!ApplicationPreferences.isStatusBar());
-                    putValue(Action.SMALL_ICON, 
-                            IconGenerator.loadIcon("/res/icons/StatusBarSmall" +
-                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
-                    putValue(Action.LARGE_ICON_KEY, 
-                            IconGenerator.loadIcon("/res/icons/StatusBar" +
-                            (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
-                    jNotepad.status();
-                }
+            new Thread(() -> {
+                ApplicationPreferences.setStatusBar(!ApplicationPreferences.isStatusBar());
+                putValue(Action.SMALL_ICON, 
+                        IconGenerator.loadIcon("/res/icons/StatusBarSmall" +
+                        (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
+                putValue(Action.LARGE_ICON_KEY, 
+                        IconGenerator.loadIcon("/res/icons/StatusBar" +
+                        (ApplicationPreferences.isStatusBar() ? "On" : "Off") + ".png"));
+                jNotepad.status();
             }, "Status Bar").start();
         }
     }

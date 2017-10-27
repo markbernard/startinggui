@@ -230,19 +230,14 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         
         if (saveSuccessful) {
             JNotepad self = this;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    String filePath = ApplicationPreferences.getCurrentFilePath();
-                    JFileChooser fileChooser = new JFileChooser(filePath);
-                    if (fileChooser.showOpenDialog(self) == JFileChooser.APPROVE_OPTION) {
-                        File selectedFile = fileChooser.getSelectedFile();
-                        fileName = selectedFile.getName();
-                        ApplicationPreferences.setCurrentFilePath(
-                                selectedFile.getParentFile().getAbsolutePath()
-                                .replace("\\", "/"));
-                        loadFile(selectedFile);
-                    }
+            SwingUtilities.invokeLater(() -> {
+                String filePath = ApplicationPreferences.getCurrentFilePath();
+                JFileChooser fileChooser = new JFileChooser(filePath);
+                if (fileChooser.showOpenDialog(self) == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    fileName = selectedFile.getName();
+                    ApplicationPreferences.setCurrentFilePath(selectedFile.getParentFile().getAbsolutePath().replace("\\", "/"));
+                    loadFile(selectedFile);
                 }
             });
         }
@@ -269,26 +264,23 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     
     private void saveFile(String path) {
         JComponent parentComponent = this;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Writer out = null;
-                
-                try {
-                    out = new OutputStreamWriter(new FileOutputStream(path), 
-                            StandardCharsets.UTF_8);
-                    out.write(textArea.getText());
-                } catch (FileNotFoundException e) {
-                    JOptionPane.showMessageDialog(parentComponent, 
-                            "Unable to create the file: " + path + "\n" + e.getMessage(), 
-                            "Error loading file", JOptionPane.ERROR_MESSAGE);
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(parentComponent, 
-                            "Unable to save the file: " + path, 
-                            "Error loading file", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    ResourceCleanup.close(out);
-                }
+        SwingUtilities.invokeLater(() -> {
+            Writer out = null;
+            
+            try {
+                out = new OutputStreamWriter(new FileOutputStream(path), 
+                        StandardCharsets.UTF_8);
+                out.write(textArea.getText());
+            } catch (FileNotFoundException e) {
+                JOptionPane.showMessageDialog(parentComponent, 
+                        "Unable to create the file: " + path + "\n" + e.getMessage(), 
+                        "Error loading file", JOptionPane.ERROR_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(parentComponent, 
+                        "Unable to save the file: " + path, 
+                        "Error loading file", JOptionPane.ERROR_MESSAGE);
+            } finally {
+                ResourceCleanup.close(out);
             }
         });
     }
@@ -305,23 +297,20 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         JNotepad self = this;
         
         try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                    String filePath = ApplicationPreferences.getCurrentFilePath();
-                    JFileChooser fileChooser = new JFileChooser(filePath);
-                    if (fileChooser.showSaveDialog(self) == JFileChooser.APPROVE_OPTION) {
-                        File selectedFile = fileChooser.getSelectedFile();
-                        fileName = selectedFile.getName();
-                        ApplicationPreferences.setCurrentFilePath(
-                                selectedFile.getParentFile().getAbsolutePath()
-                                .replace("\\", "/"));
-                        saveFile(selectedFile.getAbsolutePath());
-                        dirty = false;
-                        setTitle();
-                    } else {
-                        result.put("result", Boolean.FALSE);
-                    }
+            SwingUtilities.invokeAndWait(() -> {
+                String filePath = ApplicationPreferences.getCurrentFilePath();
+                JFileChooser fileChooser = new JFileChooser(filePath);
+                if (fileChooser.showSaveDialog(self) == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = fileChooser.getSelectedFile();
+                    fileName = selectedFile.getName();
+                    ApplicationPreferences.setCurrentFilePath(
+                            selectedFile.getParentFile().getAbsolutePath()
+                            .replace("\\", "/"));
+                    saveFile(selectedFile.getAbsolutePath());
+                    dirty = false;
+                    setTitle();
+                } else {
+                    result.put("result", Boolean.FALSE);
                 }
             });
         } catch (Exception e) {
@@ -339,23 +328,20 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         
         if (dirty) {
             try {
-                SwingUtilities.invokeAndWait(new Runnable() {
-                    @Override
-                    public void run() {
-                        int choice = JOptionPane.showConfirmDialog(self, 
-                                "There are changes in the current document.\n" +
-                                "Click 'Yes' to save changes.\n" +
-                                "Click 'No' to discard changes.\n" +
-                                "Click 'Cancel' to stop the current action.", 
-                                "Save Changes?", 
-                                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-                        if (choice == JOptionPane.YES_OPTION) {
-                            result.put("result", DirtyStatus.SAVE_FILE);
-                        } else if (choice == JOptionPane.NO_OPTION) {
-                            result.put("result", DirtyStatus.DONT_SAVE_FILE);
-                        } else if (choice == JOptionPane.CANCEL_OPTION) {
-                            result.put("result", DirtyStatus.CANCEL_ACTION);
-                        }
+                SwingUtilities.invokeAndWait(() -> {
+                    int choice = JOptionPane.showConfirmDialog(self, 
+                            "There are changes in the current document.\n" +
+                            "Click 'Yes' to save changes.\n" +
+                            "Click 'No' to discard changes.\n" +
+                            "Click 'Cancel' to stop the current action.", 
+                            "Save Changes?", 
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (choice == JOptionPane.YES_OPTION) {
+                        result.put("result", DirtyStatus.SAVE_FILE);
+                    } else if (choice == JOptionPane.NO_OPTION) {
+                        result.put("result", DirtyStatus.DONT_SAVE_FILE);
+                    } else if (choice == JOptionPane.CANCEL_OPTION) {
+                        result.put("result", DirtyStatus.CANCEL_ACTION);
                     }
                 });
             } catch (Exception e) {
@@ -395,11 +381,8 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
     }
 
     private void setTitle() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
-            }
+        SwingUtilities.invokeLater(() -> {
+            parentFrame.setTitle((dirty ? "*" : "") + fileName + " - " + APPLICATION_TITLE);
         });
     }
 
@@ -411,11 +394,8 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             printRequestAttributeSet = new HashPrintRequestAttributeSet();
         }
         
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                PrinterJob.getPrinterJob().pageDialog(printRequestAttributeSet);
-            }
+        SwingUtilities.invokeLater(() -> {
+            PrinterJob.getPrinterJob().pageDialog(printRequestAttributeSet);
         });
     }
 
@@ -426,19 +406,16 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         if (printRequestAttributeSet == null) {
             printRequestAttributeSet = new HashPrintRequestAttributeSet();
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    textArea.print(null, 
-                            new MessageFormat("page {0}"), 
-                            true, 
-                            PrinterJob.getPrinterJob().getPrintService(), 
-                            printRequestAttributeSet, 
-                            true);
-                } catch (PrinterException e) {
-                    e.printStackTrace();
-                }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                textArea.print(null, 
+                        new MessageFormat("page {0}"), 
+                        true, 
+                        PrinterJob.getPrinterJob().getPrintService(), 
+                        printRequestAttributeSet, 
+                        true);
+            } catch (PrinterException e) {
+                e.printStackTrace();
             }
         });
     }
@@ -456,15 +433,12 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             // System look and feel is always present.
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                JFrame frame = new JFrame();
-                frame.setLayout(new BorderLayout());
-                JNotepad jNotepad = new JNotepad(frame);
-                frame.add(jNotepad, BorderLayout.CENTER);
-                frame.setVisible(true);
-            }
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame();
+            frame.setLayout(new BorderLayout());
+            JNotepad jNotepad = new JNotepad(frame);
+            frame.add(jNotepad, BorderLayout.CENTER);
+            frame.setVisible(true);
         });
     }
     

@@ -146,22 +146,16 @@ public class FontDialog extends Dialog<ButtonType> {
         Button okButton = new Button("OK");
         buttonPane.add(okButton, 0, 0);
         okButton.setDefaultButton(true);
-        okButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                setResult(ButtonType.OK);
-                window.hide();
-            }
+        okButton.setOnAction((event) -> {
+            setResult(ButtonType.OK);
+            window.hide();
         });
         Button cancelButton = new Button("Cancel");
         buttonPane.add(cancelButton, 1, 0);
         cancelButton.setCancelButton(true);
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                setResult(ButtonType.CANCEL);
-                window.hide();
-            }
+        cancelButton.setOnAction((event) -> {
+            setResult(ButtonType.CANCEL);
+            window.hide();
         });
         
         fontSampleLabel = new Text("AaBbYyZz");

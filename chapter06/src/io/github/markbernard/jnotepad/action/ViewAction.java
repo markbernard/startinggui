@@ -63,12 +63,7 @@ public class ViewAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.status();
-                }
-            }, "Status Bar").start();
+            new Thread(() -> jNotepad.status(), "Status Bar").start();
         }
     }
 }

@@ -70,8 +70,6 @@ import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -179,12 +177,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
         add(textScroll, BorderLayout.CENTER);
         lineNumberComponent = new LineNumberComponent(this, textScroll.getVerticalScrollBar(), textScroll);
         textScroll.setRowHeaderView(lineNumberComponent);
-        textPane.addCaretListener(new CaretListener() {
-            @Override
-            public void caretUpdate(CaretEvent e) {
-                updateStatusBar(e.getDot());
-            }
-        });
+        textPane.addCaretListener((event) -> updateStatusBar(event.getDot()));
         updateStatusBar(textPane.getCaretPosition());
         document = new DefaultStyledDocument();
         document.addDocumentListener(this);
@@ -494,7 +487,7 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
             Point caratPosition = calculatePosition(position);
             jNotepad.updateStatusBar(String.format("Ln %d, Col %d", 
                     caratPosition.x, caratPosition.y));
-        } catch (Exception e) {
+        } catch (BadLocationException e) {
             //not critical if the position in the
             //status bar does not get updated.
             e.printStackTrace();
@@ -715,24 +708,21 @@ public class TextDocument extends JPanel implements DocumentListener, KeyListene
     private void saveFile() {
         final JComponent parentComponent = this;
         final String path = filePath + FILE_SEPARATOR + fileName;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Writer out = null;
-                
-                try {
-                    out = new OutputStreamWriter(new FileOutputStream(path), encoding);
-                    out.write(document.getText(0, document.getLength()));
-                } catch (FileNotFoundException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
-                } catch (IOException e) {
-                    JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error saving file", JOptionPane.ERROR_MESSAGE);
-                } catch (BadLocationException e) {
-                    //should not happen as length is retreived from the document.
-                    e.printStackTrace();
-                } finally {
-                    ResourceCleanup.close(out);
-                }
+        SwingUtilities.invokeLater(() -> {
+            Writer out = null;
+            
+            try {
+                out = new OutputStreamWriter(new FileOutputStream(path), encoding);
+                out.write(document.getText(0, document.getLength()));
+            } catch (FileNotFoundException e) {
+                JOptionPane.showMessageDialog(parentComponent, "Unable to create the file: " + path + "\n" + e.getMessage(), "Error saving file", JOptionPane.ERROR_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(parentComponent, "Unable to save the file: " + path, "Error saving file", JOptionPane.ERROR_MESSAGE);
+            } catch (BadLocationException e) {
+                //should not happen as length is retreived from the document.
+                e.printStackTrace();
+            } finally {
+                ResourceCleanup.close(out);
             }
         });
     }

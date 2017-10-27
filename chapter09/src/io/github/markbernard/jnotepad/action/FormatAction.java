@@ -88,16 +88,13 @@ public class FormatAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    ApplicationPreferences.setWordWrap(!ApplicationPreferences.isWordWrap());
-                    putValue(Action.SMALL_ICON, IconGenerator.loadIcon("/res/icons/WordWrapSmall" +
-                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
-                    putValue(Action.LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/WordWrap" +
-                            (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
-                    jNotepad.wordWrap();
-                }
+            new Thread(() -> {
+                ApplicationPreferences.setWordWrap(!ApplicationPreferences.isWordWrap());
+                putValue(Action.SMALL_ICON, IconGenerator.loadIcon("/res/icons/WordWrapSmall" +
+                        (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
+                putValue(Action.LARGE_ICON_KEY, IconGenerator.loadIcon("/res/icons/WordWrap" +
+                        (ApplicationPreferences.isWordWrap() ? "On" : "Off") + ".png"));
+                jNotepad.wordWrap();
             }, "Word Wrap").start();
         }
         
@@ -127,12 +124,7 @@ public class FormatAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.font();
-                }
-            }, "Font").start();
+            new Thread(() -> jNotepad.font(), "Font").start();
         }
     }
     
@@ -157,12 +149,7 @@ public class FormatAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent arg0) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.encoding();
-                }
-            }, "Encoding").start();
+            new Thread(() -> jNotepad.encoding(), "Encoding").start();
         }
     }
 }

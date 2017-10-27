@@ -67,12 +67,7 @@ public class HelpAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.help();
-                }
-            }, "View Help").start();
+            new Thread(() -> jNotepad.help(), "View Help").start();
         }
     }
 
@@ -99,12 +94,7 @@ public class HelpAction extends AbstractAction {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.about();
-                }
-            }, "About").start();
+            new Thread(() -> jNotepad.about(), "About").start();
         }
     }
 }

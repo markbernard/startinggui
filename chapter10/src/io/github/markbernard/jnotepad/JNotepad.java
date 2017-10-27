@@ -281,15 +281,12 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * @param position
      */
     public void updateStatusBar(String position) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updateCursorLocation(position);
-                updateCapsLock();
-                updateInsertMode();
-                updateReadOnly();
-                updateEncoding();
-            }
+        SwingUtilities.invokeLater(() -> {
+            updateCursorLocation(position);
+            updateCapsLock();
+            updateInsertMode();
+            updateReadOnly();
+            updateEncoding();
         });
     }
     
@@ -523,14 +520,11 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Update the main title with the currently selected tab.
      */
     public void setTitle() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                parentFrame.setTitle(currentDocument.getTitle() + " - " + APPLICATION_TITLE);
-                int index = documentTabs.indexOfComponent(currentDocument);
-                TabComponent tabComponent = (TabComponent) documentTabs.getTabComponentAt(index);
-                tabComponent.setName(currentDocument.getTitle());
-            }
+        SwingUtilities.invokeLater(() -> {
+            parentFrame.setTitle(currentDocument.getTitle() + " - " + APPLICATION_TITLE);
+            int index = documentTabs.indexOfComponent(currentDocument);
+            TabComponent tabComponent = (TabComponent) documentTabs.getTabComponentAt(index);
+            tabComponent.setName(currentDocument.getTitle());
         });
     }
 
@@ -567,36 +561,21 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Undo the last text input
      */
     public void undo() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.undo();
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.undo());
     }
     
     /**
      * Cut the selected text and place it in the system clipboard
      */
     public void cut() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.cut();
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.cut());
     }
     
     /**
      * Copy the selected text and place it in the system clipboard
      */
     public void copy() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.copy();
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.copy());
     }
     
     /**
@@ -607,12 +586,7 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
         DataFlavor[] flavors = clipboard.getAvailableDataFlavors();
         for (DataFlavor flavor : flavors) {
             if (flavor.isFlavorTextType() && flavor.isMimeTypeSerializedObject()) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        currentDocument.performPaste(flavor, clipboard);
-                    }
-                });
+                SwingUtilities.invokeLater(() -> currentDocument.performPaste(flavor, clipboard));
             }
         }
     }
@@ -621,24 +595,16 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Delete the selected text.
      */
     public void delete() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.delete();
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.delete());
     }
     
     /**
      * Display a dialog for the user to search the text for something
      */
     public void find() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                SearchDialog dialog = new SearchDialog(parentFrame, self, false);
-                dialog.setVisible(true);
-            }
+        SwingUtilities.invokeLater(() -> {
+            SearchDialog dialog = new SearchDialog(parentFrame, self, false);
+            dialog.setVisible(true);
         });
     }
     
@@ -659,12 +625,9 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      */
     public void replace() {
         JNotepad self = this;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                SearchDialog dialog = new SearchDialog(parentFrame, self, true);
-                dialog.setVisible(true);
-            }
+        SwingUtilities.invokeLater(() -> {
+            SearchDialog dialog = new SearchDialog(parentFrame, self, true);
+            dialog.setVisible(true);
         });
     }
     
@@ -672,60 +635,35 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * 
      */
     public void performReplace() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.performReplace(findTerm, replaceTerm, matchCase);
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.performReplace(findTerm, replaceTerm, matchCase));
     }
     
     /**
      * 
      */
     public void replaceAll() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.replaceAll(findTerm, replaceTerm, matchCase);
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.replaceAll(findTerm, replaceTerm, matchCase));
     }
     
     /**
      * Place the cursor on the beginning of the line number select by the user.
      */
     public void goTo() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.goTo(parentFrame);
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.goTo(parentFrame));
     }
 
     /**
      * Selects all text in the JTextArea.
      */
     public void selectAll() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.selectAll();
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.selectAll());
     }
     
     /**
      * Insert the time and date into the text a the current cursor location.
      */
     public void timeDate() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.timeDate();
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.timeDate());
     }
 
     /**
@@ -787,34 +725,26 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Toggle word wrapping
      */
     public void wordWrap() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                currentDocument.wordWrap(formatWordWrap, toolbar);
-            }
-        });
+        SwingUtilities.invokeLater(() -> currentDocument.wordWrap(formatWordWrap, toolbar));
     }
 
     /**
      * Set the font to be used for editing and printing.
      */
     public void font() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                FontDialog fontDialog = new FontDialog(parentFrame, 
-                        ApplicationPreferences.getCurrentFont());
-                if (fontDialog.showFontDialog()) {
-                    Font selectedFont = fontDialog.getSelectedFont();
-                    ApplicationPreferences.setCurrentFont(selectedFont);
-                    for (int i=0;i<documentTabs.getTabCount();i++) {
-                        TextDocument doc = (TextDocument)documentTabs.getComponentAt(i);
-                        doc.setUpdateFont(true);
-                    }
-                    currentDocument.performUpdateFont();
+        SwingUtilities.invokeLater(() -> {
+            FontDialog fontDialog = new FontDialog(parentFrame, 
+                    ApplicationPreferences.getCurrentFont());
+            if (fontDialog.showFontDialog()) {
+                Font selectedFont = fontDialog.getSelectedFont();
+                ApplicationPreferences.setCurrentFont(selectedFont);
+                for (int i=0;i<documentTabs.getTabCount();i++) {
+                    TextDocument doc = (TextDocument)documentTabs.getComponentAt(i);
+                    doc.setUpdateFont(true);
                 }
-                fontDialog.dispose();
+                currentDocument.performUpdateFont();
             }
+            fontDialog.dispose();
         });
     }
     
@@ -822,16 +752,13 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Show the user a dialog to select the encoding they want to use.
      */
     public void encoding() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                EncodingDialog encodingDialog = new EncodingDialog(parentFrame, currentDocument.getEncoding());
-                if (encodingDialog.showDialog()) {
-                    String encoding = encodingDialog.getEncoding();
-                    if (!encoding.equals(currentDocument.getEncoding())) {
-                        currentDocument.setEncoding(encoding);
-                        updateEncoding();
-                    }
+        SwingUtilities.invokeLater(() -> {
+            EncodingDialog encodingDialog = new EncodingDialog(parentFrame, currentDocument.getEncoding());
+            if (encodingDialog.showDialog()) {
+                String encoding = encodingDialog.getEncoding();
+                if (!encoding.equals(currentDocument.getEncoding())) {
+                    currentDocument.setEncoding(encoding);
+                    updateEncoding();
                 }
             }
         });
@@ -841,17 +768,14 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Toggle the status bar on or off
      */
     public void status() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (ApplicationPreferences.isStatusBar()) {
-                    add(statusBarPanel, BorderLayout.SOUTH);
-                } else {
-                    remove(statusBarPanel);
-                }
-                validate();
-                repaint();
+        SwingUtilities.invokeLater(() -> {
+            if (ApplicationPreferences.isStatusBar()) {
+                add(statusBarPanel, BorderLayout.SOUTH);
+            } else {
+                remove(statusBarPanel);
             }
+            validate();
+            repaint();
         });
     }
     
@@ -870,12 +794,9 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
      * Show simple about dialog.
      */
     public void about() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                AboutDialog aboutDialog = new AboutDialog(parentFrame);
-                aboutDialog.setVisible(true);
-            }
+        SwingUtilities.invokeLater(() -> {
+            AboutDialog aboutDialog = new AboutDialog(parentFrame);
+            aboutDialog.setVisible(true);
         });
     }
     
@@ -908,14 +829,11 @@ public class JNotepad extends JPanel implements WindowListener, KeyListener {
             // System look and feel is always present.
         }
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                JFrame frame = new JFrame();
-                frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-                frame.setLayout(new BorderLayout());
-                new JNotepad(frame);
-            }
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame();
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            frame.setLayout(new BorderLayout());
+            new JNotepad(frame);
         });
     }
 }

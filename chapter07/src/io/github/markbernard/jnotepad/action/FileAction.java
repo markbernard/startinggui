@@ -79,12 +79,7 @@ public class FileAction extends AbstractAction {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.newDocument();
-                }
-            }, "New Document").start();
+            new Thread(() -> jNotepad.newDocument(), "New Document").start();
         }
     }
 
@@ -114,12 +109,7 @@ public class FileAction extends AbstractAction {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.load();
-                }
-            }, "Open").start();
+            new Thread(() -> jNotepad.load(), "Open").start();
         }
     }
 
@@ -149,12 +139,7 @@ public class FileAction extends AbstractAction {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.save();
-                }
-            }, "Save").start();
+            new Thread(() -> jNotepad.save(), "Save").start();
         }
     }
 
@@ -186,12 +171,7 @@ public class FileAction extends AbstractAction {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.saveAs();
-                }
-            }, "Save As Thread").start();
+            new Thread(() -> jNotepad.saveAs(), "Save As Thread").start();
         }
     }
 
@@ -222,12 +202,7 @@ public class FileAction extends AbstractAction {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.pageSetup();
-                }
-            }, "Page Setup").start();
+            new Thread(() -> jNotepad.pageSetup(), "Page Setup").start();
         }
     }
 
@@ -259,12 +234,7 @@ public class FileAction extends AbstractAction {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.doPrint();
-                }
-            }, "Print").start();
+            new Thread(() -> jNotepad.doPrint(), "Print").start();
         }
     }
 
@@ -293,12 +263,7 @@ public class FileAction extends AbstractAction {
         
         @Override
         public void actionPerformed(ActionEvent e) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    jNotepad.exit();
-                }
-            }, "Exit").start();
+            new Thread(() -> jNotepad.exit(), "Exit").start();
         }
     }
 }

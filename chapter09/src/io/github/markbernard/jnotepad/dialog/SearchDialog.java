@@ -26,8 +26,6 @@ import io.github.markbernard.jnotepad.action.EditAction;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
@@ -148,12 +146,9 @@ public class SearchDialog extends BasicDialog implements DocumentListener {
         JButton cancel = new JButton("Cancel");
         addEscapeToActionMap(cancel);
         buttonPanel.add(cancel);
-        cancel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setVisible(false);
-                dispose();
-            }
+        cancel.addActionListener((event) -> {
+            setVisible(false);
+            dispose();
         });
         
         setResizable(false);
